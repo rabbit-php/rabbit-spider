@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
-use App\Tasks\Spider\Manager\BaseCtrl;
+use Rabbit\Spider\Manager\BaseCtrl;
 
 abstract class ISpiderTask
 {

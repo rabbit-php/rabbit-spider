@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
-use App\Tasks\Spider\Exception\EmptyException;
-use App\Tasks\Spider\SpiderResponse;
+use Rabbit\Spider\Exception\EmptyException;
+use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\Core\LoopControl;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\HttpClient\Client;

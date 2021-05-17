@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
-use App\Tasks\Spider\Manager\LocalCtrl;
-use App\Tasks\Spider\Manager\ProxyManager;
+use Rabbit\Spider\Manager\LocalCtrl;
+use Rabbit\Spider\Manager\ProxyManager;
 use Throwable;
 
 /**

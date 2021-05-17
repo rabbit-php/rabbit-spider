@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
-use App\Tasks\Spider\Exception\EmptyException;
-use App\Tasks\Spider\SpiderResponse;
+use Rabbit\Spider\Exception\EmptyException;
+use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\Core\LoopControl;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
 
 abstract class BaseCtrl
 {
-    protected LoopControl $lc;
+    protected ?LoopControl $lc = null;
     protected bool $isRunning = false;
     protected bool $autoRun;
     protected ProxyManager $manager;
@@ -21,7 +21,7 @@ abstract class BaseCtrl
         $this->autoRun = $autoRun;
     }
 
-    public function getLC(): LoopControl
+    public function getLC(): ?LoopControl
     {
         return $this->lc;
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
-use App\Tasks\Spider\Manager\ProxyManager;
+use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
 
@@ -41,6 +41,7 @@ class CustomerProxy extends AbstractSource
                 $res['ip2long'] = ip2long($res['ip']);
                 $res['source'] = $this->source;
                 $res['release'] = $this->release;
+                $res['timeout'] = $this->timeout;
                 $res['duration'] = 1;
                 foreach ($manager->attributes as $key) {
                     $res[$key] ??= null;

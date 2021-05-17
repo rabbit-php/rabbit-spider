@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy;
 
-use App\Tasks\Spider\AbstractProxyPlugin;
-use App\Tasks\Spider\SpiderResponse;
 use Throwable;
 use Rabbit\HttpClient\Client;
 use Rabbit\Data\Pipeline\Message;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Exception\InvalidConfigException;
+use Rabbit\Spider\AbstractProxyPlugin;
+use Rabbit\Spider\SpiderResponse;
 
 /**
  * Class CheckProxy

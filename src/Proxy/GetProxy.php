@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy;
 
-use App\Tasks\Spider\AbstractProxyPlugin;
+use Rabbit\Spider\AbstractProxyPlugin;
 use Throwable;
 use Rabbit\Base\App;
 use Rabbit\Base\Exception\InvalidArgumentException;
@@ -21,7 +21,7 @@ class GetProxy extends AbstractProxyPlugin
 {
     protected ?array $domains = [];
 
-    protected string $classPrefix = 'App\Tasks\Spider\Proxy\Domains';
+    protected string $classPrefix = 'Rabbit\Spider\Proxy\Domains';
 
     protected string $poolDomain;
     /**

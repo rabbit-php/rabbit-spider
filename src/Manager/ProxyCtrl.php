@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
-use App\Tasks\Spider\Exception\EmptyException;
-use App\Tasks\Spider\Manager\BaseCtrl;
-use App\Tasks\Spider\Manager\ProxyManager;
-use App\Tasks\Spider\Source\AbstractSource;
-use App\Tasks\Spider\Source\IP;
-use App\Tasks\Spider\SpiderResponse;
+use Rabbit\Spider\Exception\EmptyException;
+use Rabbit\Spider\Manager\BaseCtrl;
+use Rabbit\Spider\Manager\ProxyManager;
+use Rabbit\Spider\Source\AbstractSource;
+use Rabbit\Spider\Source\IP;
+use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\App;
+use Rabbit\Base\Core\LoopControl;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
 use Swlib\Saber\Request;
@@ -23,6 +24,7 @@ final class ProxyCtrl extends BaseCtrl
     private array $keyCount = [];
     private string $host;
     private AbstractSource $source;
+    private string $key;
 
     public function __construct(ProxyManager $manager, AbstractSource $source, IP $ip, string $host)
     {
@@ -30,7 +32,7 @@ final class ProxyCtrl extends BaseCtrl
         $this->source = $source;
         $this->host = $host;
         $this->ip = $ip;
-
+        $this->ip->validate();
         $options = [
             'use_pool' => $this->ip->num,
             "target" => true,
@@ -52,11 +54,13 @@ final class ProxyCtrl extends BaseCtrl
         }
         $this->client = new Client($options);
         $this->keyCount[$this->host] = makeChannel($this->ip->num);
+        $this->lc = new LoopControl(0);
     }
 
     public function __destruct()
     {
-        App::warning("{$this->host} source:{$this->ip->source} proxy:{$this->ip->ip} shutdown!");
+        Client::release($this->key);
+        App::warning("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
     }
 
     public function getIP(): IP
@@ -68,14 +72,14 @@ final class ProxyCtrl extends BaseCtrl
     {
         $contents = $this->request($url, $options);
         if ($contents->code === SpiderResponse::CODE_VERCODE) {
-            if ($this->ip->checktime ?? false && $this->lc->sleep !== $this->ip->checktime) {
+            if (($this->ip->checktime ?? false) && $this->lc->sleep !== $this->ip->checktime) {
                 $this->lc->sleep = $this->ip->checktime;
-                App::warning("use {$this->ip} verification! go to check, loop {$this->ip->checktime}ms");
+                App::warning("use {$this->ip->ip} verification! go to check, loop {$this->ip->checktime}ms");
             }
             return $contents;
-        } elseif ($this->ip->checktime ?? false && $this->lc->sleep === $this->ip->checktime) {
+        } elseif (($this->ip->checktime ?? false) && $this->lc->sleep === $this->ip->checktime) {
             $this->lc->sleep = 0;
-            App::warning("use {$this->ip} restore!");
+            App::warning("use {$this->ip->ip} restore!");
         }
         if ($contents->code === SpiderResponse::CODE_EMPTY) {
             throw new EmptyException("No body with response");
@@ -91,7 +95,7 @@ final class ProxyCtrl extends BaseCtrl
         try {
             $options = [
                 'pool_key' => function (Request $request) {
-                    return Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                    return $this->key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                 },
                 'headers' => $headers
             ];
@@ -99,18 +103,21 @@ final class ProxyCtrl extends BaseCtrl
         } catch (Throwable $e) {
             $response->code = $e->getCode();
         } finally {
-            if (!$this->keyCount[$this->host]->isEmpty()) {
-                $this->keyCount[$this->host]->pop();
-            }
             $this->manager->verification($url, $response);
             if ($response->code === SpiderResponse::CODE_VERCODE) {
                 $this->ip->duration = 0;
                 $this->ip->release && $this->lc->shutdown();
             } elseif (null !== $response->getResponse()) {
                 $this->ip->duration = $response->getResponse()->getDuration();
+                if ($this->ip->release && $this->ip->duration > $this->ip->timeout * 1000) {
+                    $this->lc->shutdown();
+                }
             } else {
                 $this->ip->duration = -1;
                 $this->ip->release && $this->lc->shutdown();
+            }
+            if (!$this->keyCount[$this->host]->isEmpty()) {
+                $this->keyCount[$this->host]->pop();
             }
             $this->ip->release && $this->source->update($this->host, $this->ip);
             return $response;
@@ -121,13 +128,13 @@ final class ProxyCtrl extends BaseCtrl
     {
         if (!$this->isRunning) {
             $this->isRunning = true;
-            $this->lc = loop(function () use ($queue) {
+            loop(function () use ($queue) {
                 $task = $queue->pop();
                 rgo(function () use ($task) {
                     $task($this);
                 });
                 $this->keyCount[$this->host]->push(1);
-            }, 0);
+            }, 0, $this->lc);
         }
     }
 }

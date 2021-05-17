@@ -28,11 +28,11 @@ class IP extends Model
     {
         return [
             [['proxy'], function () {
-                $host = $this->ip ?? '';
-                $port = $this->port ?? '';
-                $user = $this->user ?? '';
-                $pass = $this->user ? ':' . $this->user : '';
-                $pass = ($user || $pass) ? "$pass@" : '';
+                $host = !empty($this->ip) && $this->ip !== '127.0.0.1' ? $this->ip : '';
+                $port = !empty($this->port) ? ":{$this->port}" : '';
+                $user = !empty($this->user) ? $this->user : '';
+                $pass = !empty($this->pass) ? ':' . $this->pass : '';
+                $pass = ($user && $pass) ? "$pass@" : '';
                 return "$user$pass$host$port";
             }]
         ];

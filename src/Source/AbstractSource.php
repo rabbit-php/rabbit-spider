@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
-use App\Tasks\Spider\Manager\ProxyCtrl;
-use App\Tasks\Spider\Manager\ProxyManager;
-use App\Tasks\Spider\ProxyInterface;
+use Rabbit\Spider\Manager\ProxyCtrl;
+use Rabbit\Spider\Manager\ProxyManager;
+use Rabbit\Spider\ProxyInterface;
 
 abstract class AbstractSource implements ProxyInterface
 {
@@ -21,6 +21,8 @@ abstract class AbstractSource implements ProxyInterface
     protected bool $release = true;
 
     protected array $hosts = [];
+
+    protected int $timeout = 5;
 
     public array $idle = [];
     public array $delIPs = [];
@@ -52,8 +54,15 @@ abstract class AbstractSource implements ProxyInterface
 
     public function update(string $domain, IP $ip): void
     {
-        if ($ip->duration <= 0) {
-            unset($this->idle["{$ip->ip}:{$ip->port}"]);
+        if ($ip->duration <= 0 || $ip->duration > $ip->timeout * 1000) {
+            $key = "{$ip->ip}:{$ip->port}";
+            if ($this->idle[$key] ?? false) {
+                $this->idle[$key]->removeHost($domain);
+                if (empty($this->idle[$key]->getHost())) {
+                    unset($this->idle[$key]);
+                }
+            }
+
             if ($ip->duration === 0) {
                 $this->waits[$domain][] = $ip;
             } else {

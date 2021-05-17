@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
-use App\Tasks\Spider\SpiderResponse;
-use App\Tasks\Spider\Stores\IProxyStore;
+use Rabbit\Spider\SpiderResponse;
+use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Exception\InvalidArgumentException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\Expression;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy;
 
-use App\Tasks\Spider\AbstractProxyPlugin;
+use Rabbit\Spider\AbstractProxyPlugin;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Data\Pipeline\Message;

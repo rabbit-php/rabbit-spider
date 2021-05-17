@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
-use App\Tasks\Spider\Exception\EmptyException;
-use App\Tasks\Spider\SpiderResponse;
+use Rabbit\Spider\Exception\EmptyException;
+use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;

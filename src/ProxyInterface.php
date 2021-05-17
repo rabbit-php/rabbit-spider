@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
-use App\Tasks\Spider\Source\IP;
+use Rabbit\Spider\Source\IP;
 
 interface ProxyInterface
 {

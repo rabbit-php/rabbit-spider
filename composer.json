@@ -1,0 +1,28 @@
+{
+  "name": "rabbit/spider",
+  "description": "rabbit spider",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "albert",
+      "email": "63851587@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4.0",
+    "rabbit/base": "dev-master",
+    "rabbit/data-pipeline": "dev-master",
+    "rabbit/httpclient": "dev-master",
+    "symfony/dom-crawler": "^5.0"
+  },
+  "require-dev": {
+    "swoole/ide-helper": "@dev",
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Rabbit\\Spider\\": "src/"
+    }
+  }
+}

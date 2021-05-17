@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
+use Rabbit\Base\Core\LoopControl;
 use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
@@ -52,7 +53,7 @@ class CustomerProxy extends AbstractSource
         }
     }
 
-    public function update(string $domain, IP $ip): void
+    public function update(string $domain, IP $ip, LoopControl $lc): void
     {
         throw new NotSupportedException("CustomerProxy no need update ip");
     }

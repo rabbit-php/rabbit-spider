@@ -110,10 +110,10 @@ final class ProxyCtrl extends BaseCtrl
             } else {
                 $this->ip->duration = -1;
             }
+            $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
             if (!$this->keyCount[$this->host]->isEmpty()) {
                 $this->keyCount[$this->host]->pop();
             }
-            $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
             return $response;
         }
     }

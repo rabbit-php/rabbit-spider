@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
+use Rabbit\Base\Core\LoopControl;
 use Rabbit\Spider\Manager\ProxyCtrl;
 use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Spider\ProxyInterface;
@@ -52,9 +53,10 @@ abstract class AbstractSource implements ProxyInterface
         return $this->hosts;
     }
 
-    public function update(string $domain, IP $ip): void
+    public function update(string $domain, IP $ip, LoopControl $lc): void
     {
         if ($ip->duration <= 0 || $ip->duration > $ip->timeout * 1000) {
+            $lc->shutdown();
             $key = "{$ip->ip}:{$ip->port}";
             if ($this->idle[$key] ?? false) {
                 $this->idle[$key]->removeHost($domain);

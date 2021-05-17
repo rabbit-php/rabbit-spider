@@ -105,20 +105,15 @@ final class ProxyCtrl extends BaseCtrl
             $this->manager->verification($url, $response);
             if ($response->code === SpiderResponse::CODE_VERCODE) {
                 $this->ip->duration = 0;
-                $this->ip->release && $this->lc->shutdown();
             } elseif (null !== $response->getResponse()) {
                 $this->ip->duration = $response->getResponse()->getDuration();
-                if ($this->ip->release && $this->ip->duration > $this->ip->timeout * 1000) {
-                    $this->lc->shutdown();
-                }
             } else {
                 $this->ip->duration = -1;
-                $this->ip->release && $this->lc->shutdown();
             }
             if (!$this->keyCount[$this->host]->isEmpty()) {
                 $this->keyCount[$this->host]->pop();
             }
-            $this->ip->release && $this->source->update($this->host, $this->ip);
+            $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
             return $response;
         }
     }

@@ -51,4 +51,9 @@ class IP extends Model
     {
         return $this->hosts;
     }
+
+    public function removeHost(string $host): void
+    {
+        unset($this->hosts[$host]);
+    }
 }

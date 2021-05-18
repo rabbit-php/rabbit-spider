@@ -59,8 +59,7 @@ abstract class AbstractSource implements ProxyInterface
             $lc->shutdown();
             $key = "{$ip->ip}:{$ip->port}";
             if ($this->idle[$key] ?? false) {
-                $this->idle[$key]->removeHost($domain);
-                if (empty($this->idle[$key]->getHost())) {
+                if (empty($this->idle[$key]->removeHost($domain))) {
                     unset($this->idle[$key]);
                 }
             }

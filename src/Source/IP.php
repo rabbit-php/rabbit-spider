@@ -40,8 +40,8 @@ class IP extends Model
 
     public function addHost(string $host): bool
     {
-        if (!in_array($host, $this->hosts)) {
-            $this->hosts[] = $host;
+        if (!array_key_exists($host, $this->hosts)) {
+            $this->hosts[$host] = $host;
             return true;
         }
         return false;
@@ -52,8 +52,9 @@ class IP extends Model
         return $this->hosts;
     }
 
-    public function removeHost(string $host): void
+    public function removeHost(string $host): array
     {
         unset($this->hosts[$host]);
+        return $this->hosts;
     }
 }

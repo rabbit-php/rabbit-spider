@@ -24,7 +24,7 @@ final class ProxyCtrl extends BaseCtrl
     private array $keyCount = [];
     private string $host;
     private AbstractSource $source;
-    private string $key;
+    private ?string $key = null;
 
     public function __construct(ProxyManager $manager, AbstractSource $source, IP $ip, string $host)
     {
@@ -58,7 +58,7 @@ final class ProxyCtrl extends BaseCtrl
 
     public function __destruct()
     {
-        Client::release($this->key);
+        $this->key && Client::release($this->key);
         App::debug("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
     }
 

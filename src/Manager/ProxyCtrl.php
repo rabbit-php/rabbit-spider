@@ -59,7 +59,7 @@ final class ProxyCtrl extends BaseCtrl
     public function __destruct()
     {
         Client::release($this->key);
-        App::info("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
+        App::debug("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
     }
 
     public function getIP(): IP

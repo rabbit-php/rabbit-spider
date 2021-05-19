@@ -9,6 +9,7 @@ use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
+use Swlib\Saber\Request;
 use Throwable;
 
 final class LocalCtrl extends BaseCtrl
@@ -71,6 +72,9 @@ final class LocalCtrl extends BaseCtrl
         $response = new SpiderResponse();
         try {
             $options = [
+                'pool_key' => function (Request $request) {
+                    return Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                },
                 'headers' => $headers,
                 'timeout'  => $this->manager->timeout,
             ];

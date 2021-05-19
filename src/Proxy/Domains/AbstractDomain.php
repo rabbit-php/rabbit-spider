@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy\Domains;
 
+use Generator;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -12,23 +13,32 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 abstract class AbstractDomain
 {
+    protected ?string $tableSelector = null;
 
+    public function getSelector(): ?string
+    {
+        return $this->tableSelector;
+    }
     /**
      * @return string
      */
-    public static function getEncoding(): string
+    public function getEncoding(): ?array
     {
-        return 'utf-8';
+        return ['auto', 'utf-8', false];
     }
 
     /**
      * @param Crawler $node
      * @return array
      */
-    abstract public static function buildData(Crawler $node): array;
+    abstract public function buildData(Crawler $node): array;
 
     /**
      * @return array
      */
-    abstract public static function getUrls(): array;
+    abstract public function getUrls(int $i, int $type): Generator;
+
+    abstract public function getTypes(): array;
+
+    abstract public function getPages(Crawler $crawler): int;
 }

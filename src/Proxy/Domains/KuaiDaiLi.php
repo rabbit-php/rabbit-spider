@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy\Domains;
 
+use Generator;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -11,38 +13,49 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class KuaiDaiLi extends AbstractDomain
 {
-    public static string $tableSelector = '//*[@id="list"]/table/tbody/tr';
+    public function __construct()
+    {
+        $this->tableSelector = '//*[@id="list"]/table/tbody/tr';
+    }
 
+    public function getTypes(): array
+    {
+        return [1, 2];
+    }
     /**
      * @return string[]
      */
-    public static function getUrls(): array
+    public function getUrls(int $i, int $type = 1): Generator
     {
-        return [
-            "https://www.kuaidaili.com/free/inha/",
-            "https://www.kuaidaili.com/free/inha/2/",
-            "https://www.kuaidaili.com/free/inha/3/",
-            "https://www.kuaidaili.com/free/inha/4/",
-            "https://www.kuaidaili.com/free/inha/5/",
-            "https://www.kuaidaili.com/free/intr/",
-            "https://www.kuaidaili.com/free/intr/2/",
-            "https://www.kuaidaili.com/free/intr/3/",
-            "https://www.kuaidaili.com/free/intr/4/",
-            "https://www.kuaidaili.com/free/intr/5/",
-        ];
+        $ha = $type === 1 ? 'inha' : 'intr';
+        if ($i === 1) {
+            yield "https://www.kuaidaili.com/free/{$ha}/";
+        } else {
+            yield "https://www.kuaidaili.com/free/{$ha}/{$i}";
+        }
     }
 
     /**
      * @param Crawler $node
      * @return array
      */
-    public static function buildData(Crawler $node): array
+    public function buildData(Crawler $node): array
     {
         $ip = $node->filterXPath('.//td[1]')->text();
         $port = $node->filterXPath('.//td[2]')->text();
         $anonymity = $node->filterXPath('.//td[3]')->text() === "高匿名" ? 2 : 1;
         $protocol = strtolower($node->filterXPath('.//td[4]')->text());
         $location = $node->filterXPath('.//td[5]')->text();
-        return [ip2long($ip), $ip, $port, $anonymity, $protocol, $location];
+        return [ip2long($ip), $ip, (int)$port, $anonymity, $protocol, $location];
+    }
+
+    public function getPages(Crawler $crawler): int
+    {
+        $pages = [];
+        $page = $crawler->filterXPath('//*[@id="listnav"]/ul/li');
+        $page->each(function (Crawler $node) use (&$pages) {
+            $pages[] = (int)$node->filterXPath('.//a')->text('0');
+        });
+        return max($pages);
     }
 }

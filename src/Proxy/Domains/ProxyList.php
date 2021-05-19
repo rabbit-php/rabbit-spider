@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy\Domains;
 
+use Generator;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -11,24 +13,28 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class ProxyList extends AbstractDomain
 {
-    public static string $tableSelector = '';
+    public function getTypes(): array
+    {
+        return [1, 2];
+    }
 
     /**
      * @return string[]
      */
-    public static function getUrls(): array
+    public function getUrls(int $i, int $type): Generator
     {
-        return [
-            "https://www.proxy-list.download/api/v1/get?type=http",
-            "https://www.proxy-list.download/api/v1/get?type=https",
-        ];
+        $ha = 'http';
+        if ($type !== 1) {
+            $ha = 'https';
+        }
+        yield "https://www.proxy-list.download/api/v1/get?type={$ha}";
     }
 
     /**
      * @param Crawler $node
      * @return array
      */
-    public static function buildData(Crawler $node): array
+    public function buildData(Crawler $node): array
     {
         $html = $node->last()->text();
         $lines = explode(" ", $html);
@@ -45,5 +51,10 @@ class ProxyList extends AbstractDomain
             $rows[] = [ip2long($ip), $ip, $port, $anonymity, $protocol, ''];
         }
         return $rows;
+    }
+
+    public function getPages(Crawler $crawler): int
+    {
+        return 1;
     }
 }

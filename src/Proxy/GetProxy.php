@@ -12,6 +12,7 @@ use Rabbit\Data\Pipeline\Message;
 use Rabbit\Base\Helper\ArrayHelper;
 use Swlib\SaberGM;
 use Symfony\Component\DomCrawler\Crawler;
+use Rabbit\Spider\Proxy\Domains\AbstractDomain;
 
 /**
  * Class GetProxy
@@ -22,17 +23,15 @@ class GetProxy extends AbstractProxyPlugin
     protected ?array $domains = [];
 
     protected string $classPrefix = 'Rabbit\Spider\Proxy\Domains';
-
-    protected string $poolDomain;
     /**
      * @throws Throwable
      */
     public function init(): void
     {
         parent::init();
-        [$this->domains, $this->poolDomain] = ArrayHelper::getValueByArray($this->config, ['domains', 'poolDomain']);
-        if ($this->domains === null || $this->poolDomain === null) {
-            throw new InvalidArgumentException("domains or poolDomain is empty!");
+        [$this->domains] = ArrayHelper::getValueByArray($this->config, ['domains']);
+        if ($this->domains === null) {
+            throw new InvalidArgumentException("domains is empty!");
         }
     }
 
@@ -46,63 +45,70 @@ class GetProxy extends AbstractProxyPlugin
     {
         foreach ($this->domains as $domain => $timeout) {
             rgo(function () use ($domain, $timeout, $msg) {
-                $domain = $this->classPrefix . '\\' . $domain;
+                $model = $this->classPrefix . '\\' . $domain;
+                /** @var AbstractDomain $domain */
+                $domain = create($model);
+                $model = substr($model, strrpos($model, '\\') + 1);
                 while (true) {
                     $realSleep = mt_rand(1, (int)ceil((int)$timeout / 3));
-                    $urls = $domain::getUrls();
-                    wgeach($urls, function (int $index, string $url) use ($domain, $realSleep, $urls, $timeout, $msg) {
-                        try {
-                            $options = [
-                                'use_pool' => true,
-                                'timeout' => $timeout * 5,
-                                'iconv' => [$domain::getEncoding(), 'utf-8', true],
-                                'headers' => [
-                                    'Upgrade-Insecure-Requests' => "1",
-                                    'Accept-Encoding' => null,
-                                    'DNT' => "1"
-                                ]
-                            ];
-                            // $proxy = $this->proxy->getOneIP($this->poolDomain);
-                            // if ($proxy) {
-                            //     $options['use_pool'] = false;
-                            //     $options['proxy'] = [
-                            //         'http' => 'tcp://' . $proxy['ip'] . ':' . $proxy['port'],
-                            //         'https' => 'tcp://' . $proxy['ip'] . ':' . $proxy['port']
-                            //     ];
-                            // }
-                            $response = SaberGM::get($url, $options);
-                            $crawler = new Crawler();
-                            $body = $response->getBody()->getContents();
-                            if (empty($body)) {
-                                sleep($$realSleep);
-                                return;
-                            }
-                            $crawler->addHtmlContent($body);
-                            $tmp = clone $msg;
-                            $tmp->data = [];
-                            if ($domain::$tableSelector) {
-                                $table = $crawler->filterXPath($domain::$tableSelector);
-                                $table->each(function (Crawler $node) use ($domain, $tmp) {
-                                    $tmp->data[] = array_combine($this->manager->attributes, [...$domain::buildData($node), 91, 1, 0]);
-                                });
-                            } else {
-                                foreach ($domain::buildData($crawler) as $data) {
-                                    $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                    foreach ($domain->getTypes() as $type) {
+                        $index = 1;
+                        while (true) {
+                            foreach ($domain->getUrls($index, $type) as $url) {
+                                try {
+                                    App::debug("$model get $index");
+                                    $options = [
+                                        'use_pool' => true,
+                                        'timeout' => $timeout * 5,
+                                        'iconv' => $domain->getEncoding() ?? false,
+                                        'headers' => [
+                                            'Upgrade-Insecure-Requests' => "1",
+                                            'Accept-Encoding' => null,
+                                            'DNT' => "1"
+                                        ]
+                                    ];
+                                    $response = SaberGM::get($url, $options);
+                                    $crawler = new Crawler();
+                                    $body = $response->getBody()->getContents();
+                                    if (empty($body)) {
+                                        break 2;
+                                    }
+                                    $crawler->addHtmlContent($body);
+                                    $tmp = clone $msg;
+                                    $tmp->data = [];
+                                    $total = $domain->getPages($crawler);
+                                    if (null !== $selector = $domain->getSelector()) {
+                                        $table = $crawler->filterXPath($selector);
+                                        $table->each(function (Crawler $node) use ($domain, $tmp) {
+                                            if (!empty($data = $domain->buildData($node))) {
+                                                $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                                            }
+                                        });
+                                    } else {
+                                        foreach ($domain->buildData($crawler) as $data) {
+                                            if (!empty($data)) {
+                                                $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                                            }
+                                        }
+                                    }
+                                    if (empty($tmp->data)) {
+                                        App::warning("$model page {$index} get empty");
+                                        if ($index >= $total) {
+                                            break 2;
+                                        }
+                                    }
+                                    if (++$index >= $total) {
+                                        break 2;
+                                    }
+                                    usleep(200 * 1000);
+                                    $this->sink($tmp);
+                                } catch (Throwable $exception) {
+                                    App::warning("$model get error.code=" . $exception->getCode());
+                                    break 2;
                                 }
                             }
-                            if (empty($tmp->data)) {
-                                App::warning("$domain get empty");
-                                return;
-                            }
-                            $this->sink($tmp);
-                        } catch (Throwable $exception) {
-                            App::warning("$domain get error.code=" . $exception->getCode());
-                            return;
                         }
-                        if (count($urls) - 1 === $index) {
-                            App::info("$domain finished");
-                        }
-                    }, 300);
+                    };
                     sleep($realSleep);
                 }
             });

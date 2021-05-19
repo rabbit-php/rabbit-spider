@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Spider\Proxy\Domains;
 
+use Generator;
+use Swlib\SaberGM;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -11,34 +14,46 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class CheckerProxyIP extends AbstractDomain
 {
-    public static string $tableSelector = '';
 
+    private int $day = 0;
+    private int $total = 0;
+
+    public function getTypes(): array
+    {
+        return [1];
+    }
     /**
      * @return string[]
      */
-    public static function getUrls(): array
+    public function getUrls(int $i, int $type): Generator
     {
-        return [
-            "https://checkerproxy.net/api/archive/" . date('Y-m-d', strtotime('-1day', time()))
-        ];
+        $day = $i - 1;
+        yield "https://checkerproxy.net/api/archive/" . date('Y-m-d', strtotime("-{$day}day", time()));
     }
 
     /**
      * @param Crawler $node
      * @return array
      */
-    public static function buildData(Crawler $node): array
+    public function buildData(Crawler $node): array
     {
-        $data = (array)json_decode($node->html(), true);
-        $ips = array_column($data, 'addr');
-        unset($html, $data);
+        $data = json_decode($node->text(), true);
         $rows = [];
-        foreach ($ips as $line) {
-            list($ip, $port) = explode(":", $line);
-            $anonymity = 1;
-            $protocol = "http";
-            $rows[] = [ip2long($ip), $ip, $port, $anonymity, $protocol, ''];
+        foreach ($data as $item) {
+            list($ip, $port) = explode(":", $item['addr']);
+            $rows[] = [ip2long($ip), $ip, $port, $item['kind'], $item['type'], trim("{$item['addr_geo_iso']} {$item['addr_geo_country']} {$item['addr_geo_city']}")];
         }
         return $rows;
+    }
+
+    public function getPages(Crawler $crawler): int
+    {
+        $day = strtotime(date('Y-m-d', time()));
+        if ($this->day !== $day) {
+            $this->day = $day;
+            $data = SaberGM::get("https://checkerproxy.net/api/archive/", ['use_pool' => true])->getParsedJsonArray();
+            $this->total = count($data);
+        }
+        return $this->total;
     }
 }

@@ -55,7 +55,7 @@ abstract class AbstractSource implements ProxyInterface
 
     public function update(string $domain, IP $ip, LoopControl $lc): void
     {
-        if ($ip->duration <= 0 || $ip->duration > $ip->timeout * 1000) {
+        if ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000) {
             $lc->shutdown();
             $key = "{$ip->ip}:{$ip->port}";
             if ($this->idle[$key] ?? false) {
@@ -64,7 +64,7 @@ abstract class AbstractSource implements ProxyInterface
                 }
             }
 
-            if ($ip->duration === 0) {
+            if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$domain][] = $ip;
             } else {
                 $this->delIPs[] = $ip;

@@ -104,11 +104,11 @@ final class ProxyCtrl extends BaseCtrl
         } finally {
             $this->manager->verification($url, $response);
             if ($response->code === SpiderResponse::CODE_VERCODE) {
-                $this->ip->duration = 0;
+                $this->ip->duration = IP::IP_VCODE;
             } elseif (null !== $response->getResponse()) {
                 $this->ip->duration = $response->getResponse()->getDuration();
             } else {
-                $this->ip->duration = -1;
+                $this->ip->duration = IP::IP_FAILED;
             }
             $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
             if (!$this->keyCount[$this->host]->isEmpty()) {

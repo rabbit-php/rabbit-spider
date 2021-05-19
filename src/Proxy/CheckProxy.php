@@ -10,6 +10,7 @@ use Rabbit\Data\Pipeline\Message;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Spider\AbstractProxyPlugin;
+use Rabbit\Spider\Source\IP;
 use Rabbit\Spider\SpiderResponse;
 
 /**
@@ -80,11 +81,11 @@ class CheckProxy extends AbstractProxyPlugin
                 } finally {
                     $this->manager->verification($url, $response);
                     if ($response->code === SpiderResponse::CODE_VERCODE) {
-                        $item['duration'] = 0;
+                        $item['duration'] = IP::IP_VCODE;
                     } elseif (null !== $response->getResponse()) {
                         $item['duration'] = $response->getResponse()->getDuration();
                     } else {
-                        $item['duration'] = -1;
+                        $item['duration'] = IP::IP_FAILED;
                     }
                 }
             });

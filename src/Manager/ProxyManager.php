@@ -9,6 +9,7 @@ use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Exception\InvalidArgumentException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\Expression;
+use Rabbit\Spider\Source\IP;
 
 final class ProxyManager
 {
@@ -125,14 +126,14 @@ final class ProxyManager
         $updateArr = [];
         foreach ($items as $data) {
             if (!isset($data['id'])) {
-                if ($data['duration'] > 0) {
+                if ($data['duration'] > IP::IP_VCODE) {
                     $updateArr[] = $data;
                 }
             } else {
                 $onlyUpdate = true;
-                if ($data['duration'] === -1) {
+                if ($data['duration'] === IP::IP_FAILED) {
                     $data['score'] = new Expression('score-1');
-                } elseif ($data['duration'] === 0) {
+                } elseif ($data['duration'] === IP::IP_VCODE) {
                     $data['domain'] = $domain;
                     $data['score'] = 100;
                 } else {

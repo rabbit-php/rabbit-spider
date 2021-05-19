@@ -24,6 +24,9 @@ class IP extends Model
 
     private array $hosts = [];
 
+    const IP_VCODE = 0;
+    const IP_FAILED = -1;
+
     public function rules(): array
     {
         return [

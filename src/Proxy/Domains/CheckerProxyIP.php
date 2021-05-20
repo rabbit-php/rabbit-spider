@@ -41,7 +41,7 @@ class CheckerProxyIP extends AbstractDomain
         $rows = [];
         foreach ($data as $item) {
             list($ip, $port) = explode(":", $item['addr']);
-            $rows[] = [ip2long($ip), $ip, $port, $item['kind'], $item['type'], trim("{$item['addr_geo_iso']} {$item['addr_geo_country']} {$item['addr_geo_city']}")];
+            $rows[] = [ip2long($ip), $ip, $port, $item['kind'], $item['type'] === 1 ? 'http' : 'https', trim("{$item['addr_geo_iso']} {$item['addr_geo_country']} {$item['addr_geo_city']}")];
         }
         return $rows;
     }

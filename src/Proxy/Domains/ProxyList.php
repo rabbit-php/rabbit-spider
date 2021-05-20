@@ -46,9 +46,7 @@ class ProxyList extends AbstractDomain
             $line = str_replace("\r", "", $line);
             $line = str_replace("\n", "", $line);
             list($ip, $port) = explode(":", $line);
-            $anonymity = 1;
-            $protocol = "http";
-            $rows[] = [ip2long($ip), $ip, $port, $anonymity, $protocol, ''];
+            $rows[] = [ip2long($ip), $ip, $port, 1, 'http', ''];
         }
         return $rows;
     }

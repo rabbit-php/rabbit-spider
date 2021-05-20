@@ -40,9 +40,8 @@ class EmailtryIP extends AbstractDomain
     {
         [$ip, $port] = explode(':', $node->filterXPath('.//td[1]')->text());
         $anonymity = strpos($node->filterXPath('.//td[2]')->text(), "High") !== false ? 2 : 1;
-        $protocol = 'http';
         $location = $node->filterXPath('.//td[3]')->text() . ' ' . $node->filterXPath('.//td[4]')->text();
-        return [ip2long($ip), $ip, (int)$port, $anonymity, $protocol, $location];
+        return [ip2long($ip), $ip, (int)$port, $anonymity, 'http', $location];
     }
 
     public function getPages(Crawler $crawler): int

@@ -38,10 +38,8 @@ class IP89 extends AbstractDomain
     {
         $ip = $node->filterXPath('.//td[1]')->text();
         $port = $node->filterXPath('.//td[2]')->text();
-        $anonymity = 2;
-        $protocol = 'http';
         $location = $node->filterXPath('.//td[3]')->text();
-        return [ip2long($ip), $ip, (int)$port, $anonymity, $protocol, $location];
+        return [ip2long($ip), $ip, (int)$port, 2, 'http', $location];
     }
 
     public function getPages(Crawler $crawler): int

@@ -127,6 +127,7 @@ final class ProxyManager
         foreach ($items as $data) {
             if (!isset($data['id'])) {
                 if ($data['duration'] > IP::IP_VCODE) {
+                    $data['score'] = 100;
                     $updateArr[] = $data;
                 }
             } else {

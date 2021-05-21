@@ -38,7 +38,9 @@ class EmailtryIP extends AbstractDomain
      */
     public function buildData(Crawler $node): array
     {
-        [$ip, $port] = explode(':', $node->filterXPath('.//td[1]')->text());
+        $hostArr = explode(':', $node->filterXPath('.//td[1]')->text());
+        $ip = array_shift($hostArr);
+        $port = array_shift($hostArr) ?? 80;
         $anonymity = strpos($node->filterXPath('.//td[2]')->text(), "High") !== false ? 2 : 1;
         $location = $node->filterXPath('.//td[3]')->text() . ' ' . $node->filterXPath('.//td[4]')->text();
         return [ip2long($ip), $ip, (int)$port, $anonymity, 'http', $location];

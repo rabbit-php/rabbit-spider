@@ -19,9 +19,6 @@ class FreeProxy extends AbstractDomain
         return [1];
     }
 
-    /**
-     * @return string[]
-     */
     public function getUrls(int $i, int $type): Generator
     {
         yield "http://free-proxy.cz/zh/proxylist/main/{$i}";

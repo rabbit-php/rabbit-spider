@@ -36,7 +36,7 @@ class EmailtryIP extends AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    public function buildData(Crawler $node): array
+    public function buildData(Crawler $node): ?array
     {
         $hostArr = explode(':', $node->filterXPath('.//td[1]')->text());
         $ip = array_shift($hostArr);

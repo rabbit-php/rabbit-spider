@@ -48,7 +48,7 @@ class NiMaDaiLi extends AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    public function buildData(Crawler $node): array
+    public function buildData(Crawler $node): ?array
     {
         [$ip, $port] = explode(':', $node->filterXPath('.//td[1]')->text());
         $anonymity = strpos($node->filterXPath('.//td[3]')->text(), "普通") !== false ? 1 : 2;

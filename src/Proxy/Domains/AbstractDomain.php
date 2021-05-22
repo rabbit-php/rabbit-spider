@@ -31,7 +31,7 @@ abstract class AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    abstract public function buildData(Crawler $node): array;
+    abstract public function buildData(Crawler $node): ?array;
 
     /**
      * @return array

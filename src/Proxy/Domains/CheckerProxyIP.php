@@ -35,7 +35,7 @@ class CheckerProxyIP extends AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    public function buildData(Crawler $node): array
+    public function buildData(Crawler $node): ?array
     {
         $data = json_decode($node->text(), true);
         $rows = [];

@@ -34,7 +34,7 @@ class ProxyList extends AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    public function buildData(Crawler $node): array
+    public function buildData(Crawler $node): ?array
     {
         $html = $node->last()->text();
         $lines = explode(" ", $html);

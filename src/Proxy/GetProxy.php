@@ -91,6 +91,7 @@ class GetProxy extends AbstractProxyPlugin
                                             }
                                         }
                                     }
+                                    $tmp->data = array_filter($tmp->data);
                                     if (empty($tmp->data)) {
                                         App::warning("$model page {$index} get empty");
                                         if ($index >= $total) {
@@ -103,7 +104,7 @@ class GetProxy extends AbstractProxyPlugin
                                     usleep(200 * 1000);
                                     $this->sink($tmp);
                                 } catch (Throwable $exception) {
-                                    App::warning("$model get error.code=" . $exception->getCode());
+                                    App::warning("$model get error.msg=" . $exception->getMessage());
                                     break 2;
                                 }
                             }

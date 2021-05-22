@@ -34,7 +34,7 @@ class KXDaiLi extends AbstractDomain
      * @param Crawler $node
      * @return array
      */
-    public function buildData(Crawler $node): array
+    public function buildData(Crawler $node): ?array
     {
         $ip = $node->filterXPath('.//td[1]')->text();
         $port = $node->filterXPath('.//td[2]')->text();

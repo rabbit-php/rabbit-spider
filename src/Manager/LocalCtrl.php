@@ -9,31 +9,22 @@ use Rabbit\Spider\SpiderResponse;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
+use Rabbit\Spider\Source\IP;
 use Swlib\Saber\Request;
 use Throwable;
 
 final class LocalCtrl extends BaseCtrl
 {
-    private ?string $ip = null;
-    private int $size = 5;
+    private IP $ip;
     private Client $client;
 
-    public function __construct(ProxyManager $manager, string $ip = null)
+    public function __construct(IP $ip)
     {
-        $this->manager = $manager;
-        if ($ip !== null) {
-            $parsed_url = parse_url($ip);
-            $host = isset($parsed_url['host']) ? $parsed_url['host'] : '';
-            $port = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-            $user = isset($parsed_url['user']) ? $parsed_url['user'] : '';
-            $pass = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
-            $pass = ($user || $pass) ? "$pass@" : '';
-            $this->ip = "tcp://$user$pass$host$port";
-            $this->size = isset($parsed_url['path']) ? (int)str_replace('/', '', $parsed_url['path']) : 1;
-        }
+        $this->ip = $ip;
+        $this->ip->validate();
 
         $options = [
-            'use_pool' => $this->size,
+            'use_pool' => $this->ip->num,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,
@@ -44,13 +35,18 @@ final class LocalCtrl extends BaseCtrl
             ]
         ];
 
-        if ($this->ip !== null) {
+        if (!empty($this->ip->proxy)) {
             $options['proxy'] = [
-                'http' => $this->ip,
-                'https' => $this->ip,
+                'http' => "tcp://{$this->ip->proxy}",
+                'https' => "tcp://{$this->ip->proxy}",
             ];
         }
         $this->client = new Client($options);
+    }
+
+    public function setManager(ProxyManager $manager): void
+    {
+        $this->manager = $manager;
     }
 
     public function proxy(string $url, array $options = []): SpiderResponse
@@ -76,7 +72,7 @@ final class LocalCtrl extends BaseCtrl
                     return Client::getKey($request->getConnectionTarget() + $request->getProxy());
                 },
                 'headers' => $headers,
-                'timeout'  => $this->manager->timeout,
+                'timeout'  => $this->ip->timeout,
             ];
             $response->setResponse($this->client->get($url, $options));
         } catch (Throwable $e) {

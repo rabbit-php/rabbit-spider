@@ -6,6 +6,7 @@ namespace Rabbit\Spider;
 
 use Rabbit\Spider\Manager\LocalCtrl;
 use Rabbit\Spider\Manager\ProxyManager;
+use Rabbit\Spider\Source\IP;
 use Throwable;
 
 /**
@@ -18,10 +19,15 @@ class ProxyHelper
 
     protected LocalCtrl $local;
 
-    public function __construct(ProxyManager $manager)
+    public function __construct(ProxyManager $manager, LocalCtrl $local = null)
     {
         $this->manager = $manager;
-        $this->local = new LocalCtrl($manager);
+        $this->local = $local ?? new LocalCtrl(new IP([
+            'ip' => '127.0.0.1',
+            'timeout' => $manager->timeout,
+            'release' => false
+        ]));
+        $this->local->setManager($manager);
     }
 
     public function tunnel(string $url, string $tunnel, int $retry = 5): ?SpiderResponse

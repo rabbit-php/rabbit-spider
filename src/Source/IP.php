@@ -14,8 +14,8 @@ class IP extends Model
     public ?int $port = null;
     public ?string $user = null;
     public ?string $pass = null;
-    public int $num;
-    public bool $release;
+    public int $num = 10;
+    public bool $release = true;
     public int $checktime;
     public ?string $proxy = null;
     public int $source = -1;

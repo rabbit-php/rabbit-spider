@@ -20,6 +20,9 @@
     "swoole/ide-helper": "@dev",
     "phpunit/phpunit": "*"
   },
+  "suggest": {
+    "ext-v8js": "Help to run js"
+  },
   "autoload": {
     "psr-4": {
       "Rabbit\\Spider\\": "src/"

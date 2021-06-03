@@ -7,10 +7,18 @@ namespace Rabbit\Spider\Proxy\Domains;
 use Generator;
 use Swlib\SaberGM;
 use Symfony\Component\DomCrawler\Crawler;
+use v8js;
 
 class OpenProxy extends AbstractDomain
 {
     protected ?array $list = null;
+
+    protected v8js $v8js;
+
+    public function __construct()
+    {
+        $this->v8js = new v8js();
+    }
 
     public function getTypes(): array
     {
@@ -40,20 +48,19 @@ class OpenProxy extends AbstractDomain
 
     public function buildData(Crawler $node): ?array
     {
-        $html = $node->filterXPath('//*/body/script[1]')->outerHtml();
-        preg_match_all('/(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}/', $html, $lines);
-        if ($lines[0] ?? false) {
-            $rows = [];
-            foreach ($lines[0] as $line) {
-                if (strpos($line, ":") === false) {
+        $html = $node->filterXPath('//*/body/script[1]')->html();
+        $html = str_replace('window.__NUXT__=', '', $html);
+        $data = $this->v8js->executeString($html)->data;
+        foreach (current($data)->data as $item) {
+            foreach ($item->items as $ip) {
+                if (strpos($ip, ":") === false) {
                     continue;
                 }
-                list($ip, $port) = explode(":", $line);
-                $rows[] = [ip2long($ip), $ip, $port, 1, 'http', ''];
+                list($ip, $port) = explode(":", $ip);
+                $rows[] = [ip2long($ip), $ip, $port, 1, 'http', $item->code];
             }
-            return $rows;
         }
-        return null;
+        return $rows;
     }
 
     public function getPages(Crawler $crawler): int

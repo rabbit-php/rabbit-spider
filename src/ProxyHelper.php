@@ -25,7 +25,8 @@ class ProxyHelper
         $this->local = $local ?? new LocalCtrl(new IP([
             'ip' => '127.0.0.1',
             'timeout' => $manager->timeout,
-            'release' => false
+            'release' => false,
+            'num' => -1
         ]));
         $this->local->setManager($manager);
     }

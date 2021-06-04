@@ -24,7 +24,7 @@ final class LocalCtrl extends BaseCtrl
         $this->ip->validate();
 
         $options = [
-            'use_pool' => $this->ip->num,
+            'use_pool' => $this->ip->num > 0 ? $this->ip->num : ($this->ip->num === 0 ? false : true),
             "target" => true,
             "iconv" => false,
             "redirect" => 0,

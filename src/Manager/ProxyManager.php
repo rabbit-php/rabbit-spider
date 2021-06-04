@@ -30,7 +30,7 @@ final class ProxyManager
 
     private array $sources = [];
 
-    public function __construct(IProxyStore $store, string $tc = null, array $sources = null)
+    public function __construct(IProxyStore $store, array $sources = null, string $tc = null)
     {
         $this->store = $store;
         $this->sources = $sources ?? $this->sources;

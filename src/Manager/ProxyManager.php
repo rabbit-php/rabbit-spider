@@ -104,6 +104,7 @@ final class ProxyManager
                     $queue = makeChannel();
                     foreach ($this->sources as $source) {
                         $source->addHost($host, $queue);
+                        $source->createCtrl($this);
                     }
                     $this->hosts[$host] = $queue;
                 } else {

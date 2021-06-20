@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
+use Rabbit\Base\Contract\ArrayAble;
 use Rabbit\Model\Model;
 
-class IP extends Model
+class IP extends Model implements ArrayAble
 {
     public ?int $id = null;
     public ?int $ip2long = null;
@@ -59,5 +60,10 @@ class IP extends Model
     {
         unset($this->hosts[$host]);
         return $this->hosts;
+    }
+
+    public function toArray(): array
+    {
+        return get_object_vars($this);
     }
 }

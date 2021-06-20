@@ -8,6 +8,7 @@ use Rabbit\Base\Core\LoopControl;
 use Rabbit\Spider\Manager\ProxyCtrl;
 use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Spider\ProxyInterface;
+use WeakMap;
 
 abstract class AbstractSource implements ProxyInterface
 {
@@ -25,9 +26,14 @@ abstract class AbstractSource implements ProxyInterface
 
     protected int $timeout = 5;
 
-    public array $idle = [];
-    public array $delIPs = [];
-    public array $waits = [];
+    protected WeakMap $idle;
+    protected array $delIPs = [];
+    protected array $waits = [];
+
+    public function __construct()
+    {
+        $this->idle = new WeakMap();
+    }
 
     public function getLoopTime(): int
     {
@@ -57,17 +63,15 @@ abstract class AbstractSource implements ProxyInterface
     {
         if ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000) {
             $lc->shutdown();
-            $key = "{$ip->ip}:{$ip->port}";
-            if ($this->idle[$key] ?? false) {
-                if (empty($this->idle[$key]->removeHost($domain))) {
-                    unset($this->idle[$key]);
-                }
-            }
-
             if ($ip->duration === IP::IP_VCODE) {
-                $this->waits[$domain][] = $ip;
+                $this->waits[$domain][] = $ip->toArray();
             } else {
-                $this->delIPs[] = $ip;
+                $this->delIPs[] = $ip->toArray();
+            }
+            if ($this->idle->offsetExists($ip)) {
+                if (empty($ip->removeHost($domain))) {
+                    unset($ip);
+                }
             }
         }
     }
@@ -75,7 +79,7 @@ abstract class AbstractSource implements ProxyInterface
     public function createCtrl(ProxyManager $manager): void
     {
         foreach ($this->hosts as $host => $queue) {
-            foreach ($this->idle as $ip) {
+            foreach ($this->idle as $ip => $key) {
                 if ($ip->addHost($host)) {
                     $ctrl = new ProxyCtrl($manager, $this, $ip, $host);
                     $ctrl->loop($queue);

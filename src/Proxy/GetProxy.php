@@ -105,7 +105,7 @@ class GetProxy extends AbstractProxyPlugin
                                     $this->sink($tmp);
                                 } catch (Throwable $exception) {
                                     App::warning("$model get error.msg=" . $exception->getMessage());
-                                    break 2;
+                                    break 3;
                                 }
                             }
                         }

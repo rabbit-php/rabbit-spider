@@ -10,9 +10,12 @@ use Rabbit\Base\App;
 use Rabbit\Base\Exception\InvalidArgumentException;
 use Rabbit\Data\Pipeline\Message;
 use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\HttpClient\Client;
 use Swlib\SaberGM;
 use Symfony\Component\DomCrawler\Crawler;
 use Rabbit\Spider\Proxy\Domains\AbstractDomain;
+use Rabbit\Spider\Source\IP;
+use Swlib\Saber\Request;
 
 /**
  * Class GetProxy
@@ -23,15 +26,29 @@ class GetProxy extends AbstractProxyPlugin
     protected ?array $domains = [];
 
     protected string $classPrefix = 'Rabbit\Spider\Proxy\Domains';
+
+    protected array $proxy = [];
     /**
      * @throws Throwable
      */
     public function init(): void
     {
         parent::init();
-        [$this->domains] = ArrayHelper::getValueByArray($this->config, ['domains']);
+        [$this->domains, $proxy] = ArrayHelper::getValueByArray($this->config, ['domains', 'proxy']);
         if ($this->domains === null) {
             throw new InvalidArgumentException("domains is empty!");
+        }
+        if ($proxy) {
+            foreach (explode(',', $proxy) as $ip) {
+                $parsed_url = parse_url($ip);
+                $res['ip'] = isset($parsed_url['host']) ? $parsed_url['host'] : null;
+                $res['port'] = isset($parsed_url['port']) ? (int)$parsed_url['port'] : null;
+                $res['user'] = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+                $res['pass'] = isset($parsed_url['pass']) ? $parsed_url['pass'] : '';
+                $ip = new IP($res);
+                $ip->validate();
+                $this->proxy[] = $ip;
+            }
         }
     }
 
@@ -43,8 +60,9 @@ class GetProxy extends AbstractProxyPlugin
      */
     public function run(Message $msg): void
     {
+        $useProxy = count($this->proxy);
         foreach ($this->domains as $domain => $timeout) {
-            rgo(function () use ($domain, $timeout, $msg) {
+            rgo(function () use ($domain, $timeout, $msg, $useProxy) {
                 $model = $this->classPrefix . '\\' . $domain;
                 /** @var AbstractDomain $domain */
                 $domain = create($model);
@@ -67,8 +85,16 @@ class GetProxy extends AbstractProxyPlugin
                                             'DNT' => "1"
                                         ]
                                     ];
+                                    if ($useProxy > 0) {
+                                        $ip = $this->proxy[array_rand($this->proxy)];
+                                        if ($ip->proxy) {
+                                            $options['proxy'] = "tcp://{$ip->proxy}";
+                                            $options['pool_key'] = static function (Request $request) {
+                                                return Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                                            };
+                                        }
+                                    }
                                     $response = SaberGM::get($url, $options);
-
                                     $body = $response->getBody()->getContents();
                                     if (empty($body)) {
                                         break 2;

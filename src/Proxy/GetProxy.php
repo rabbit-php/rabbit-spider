@@ -45,9 +45,10 @@ class GetProxy extends AbstractProxyPlugin
                 $res['port'] = isset($parsed_url['port']) ? (int)$parsed_url['port'] : null;
                 $res['user'] = isset($parsed_url['user']) ? $parsed_url['user'] : '';
                 $res['pass'] = isset($parsed_url['pass']) ? $parsed_url['pass'] : '';
+                $res['ip2long'] = ip2long($res['ip']);
                 $ip = new IP($res);
                 $ip->validate();
-                $this->proxy[] = $ip;
+                $this->proxy[$ip->ip2long] = $ip;
             }
         }
     }
@@ -60,6 +61,13 @@ class GetProxy extends AbstractProxyPlugin
      */
     public function run(Message $msg): void
     {
+        if ($msg->data && is_array($msg->data)) {
+            foreach ($msg->data as $ip2long => $ip) {
+                if ($ip instanceof IP && !array_key_exists($ip2long, $this->proxy)) {
+                    $this->proxy[$ip2long] = $ip;
+                }
+            }
+        }
         $useProxy = count($this->proxy);
         foreach ($this->domains as $domain => $timeout) {
             rgo(function () use ($domain, $timeout, $msg, $useProxy) {

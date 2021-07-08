@@ -102,17 +102,14 @@ final class ProxyManager
                 $host = $task->getDomain();
                 if (!array_key_exists($host, $this->hosts)) {
                     $queue = makeChannel();
+                    $this->hosts[$host] = $queue;
                     foreach ($this->sources as $source) {
                         $source->addHost($host, $queue);
-                        $source->createCtrl($this);
                     }
-                    $this->hosts[$host] = $queue;
                 } else {
                     $queue = $this->hosts[$host];
                 }
-                if (!$queue->push($task, $this->timeout)) {
-                    $this->queue->push($task);
-                }
+                $this->queue->push($task);
             }, 0);
         }
     }

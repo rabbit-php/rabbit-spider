@@ -57,18 +57,19 @@ abstract class AbstractSource implements ProxyInterface
     {
         if ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000) {
             $lc->shutdown();
-            $key = "{$ip->ip}:{$ip->port}";
-            if ($this->idle[$key] ?? false) {
-                if (empty($this->idle[$key]->removeHost($domain))) {
-                    unset($this->idle[$key]);
-                }
-            }
 
             if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$domain][] = $ip->toArray();
             } else {
                 $this->delIPs[] = $ip->toArray();
             }
+            $key = "{$ip->ip}:{$ip->port}";
+            if ($this->idle[$key] ?? false) {
+                if (empty($this->idle[$key]->removeHost($domain))) {
+                    unset($this->idle[$key]);
+                }
+            }
+            unset($ip);
         }
     }
 

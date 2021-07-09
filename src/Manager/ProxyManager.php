@@ -109,7 +109,7 @@ final class ProxyManager
                 } else {
                     $queue = $this->hosts[$host];
                 }
-                $this->queue->push($task);
+                $queue->push($task);
             }, 0);
         }
     }

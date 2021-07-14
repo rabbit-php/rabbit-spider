@@ -21,7 +21,7 @@ final class ProxyCtrl extends BaseCtrl
 {
     private IP $ip;
     private Client $client;
-    private array $keyCount = [];
+    private $pool;
     private string $host;
     private AbstractSource $source;
     private ?string $key = null;
@@ -52,7 +52,7 @@ final class ProxyCtrl extends BaseCtrl
             ];
         }
         $this->client = new Client($options);
-        $this->keyCount[$this->host] = makeChannel($this->ip->num);
+        $this->pool = makeChannel($this->ip->num);
         $this->lc = new LoopControl(0);
     }
 
@@ -111,8 +111,10 @@ final class ProxyCtrl extends BaseCtrl
                 $this->ip->duration = IP::IP_FAILED;
             }
             $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
-            if (!$this->keyCount[$this->host]->isEmpty()) {
-                $this->keyCount[$this->host]->pop();
+            if ($this->lc->loop === false) {
+                $this->pool->close();
+            } elseif (!$this->pool->isEmpty()) {
+                $this->pool->pop();
             }
             return $response;
         }
@@ -123,7 +125,7 @@ final class ProxyCtrl extends BaseCtrl
         if (!$this->isRunning) {
             $this->isRunning = true;
             loop(function () use ($queue) {
-                $this->keyCount[$this->host]->push(1);
+                $this->pool->push(1);
                 $task = $queue->pop();
                 rgo(function () use ($task) {
                     $task($this);

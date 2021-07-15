@@ -34,7 +34,7 @@ final class ProxyCtrl extends BaseCtrl
         $this->ip = $ip;
         $this->ip->validate();
         $options = [
-            'use_pool' => $this->ip->num,
+            'use_pool' => true,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,
@@ -125,7 +125,7 @@ final class ProxyCtrl extends BaseCtrl
         if (!$this->isRunning) {
             $this->isRunning = true;
             loop(function () use ($queue) {
-                if ($this->pool->push(1) === SWOOLE_CHANNEL_CLOSED) {
+                if ($this->pool->push(1) === SWOOLE_CHANNEL_CLOSED || $this->lc->loop === false) {
                     return;
                 }
                 $task = $queue->pop();

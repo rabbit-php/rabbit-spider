@@ -125,7 +125,7 @@ final class ProxyCtrl extends BaseCtrl
         if (!$this->isRunning) {
             $this->isRunning = true;
             loop(function () use ($queue) {
-                if ($this->pool->push(1) === SWOOLE_CHANNEL_CLOSED || $this->lc->loop === false) {
+                if ((!$this->pool->push(1) && $this->pool->errCode === SWOOLE_CHANNEL_CLOSED) || $this->lc->loop === false) {
                     return;
                 }
                 $task = $queue->pop();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rabbit\Spider;
 
 use Rabbit\HttpClient\Response;
+use Rabbit\Spider\Exception\FailedException;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 
@@ -37,12 +38,13 @@ class SpiderResponse
         $this->response = $response;
         if ($response !== null) {
             $this->code = $response->getStatusCode();
-            if (2 === ($this->code / 100) % 10) {
-                $this->isOK = true;
+            if ($this->code <= 0) {
+                return;
             }
             if ($response->getBody()->getSize() === 0) {
                 $this->code = self::CODE_EMPTY;
             }
+            $this->isOK = true;
         }
     }
 
@@ -66,6 +68,8 @@ class SpiderResponse
             if (null === $this->crawler = $check->verificationCode($this)) {
                 $this->code = self::CODE_VERCODE;
             }
+        } catch (FailedException $e) {
+            $this->code = self::CODE_FAILED;
         } catch (Throwable $e) {
             $this->code = self::CODE_EMPTY;
         }

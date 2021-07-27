@@ -34,7 +34,7 @@ final class ProxyCtrl extends BaseCtrl
         $this->ip = $ip;
         $this->ip->validate();
         $options = [
-            'use_pool' => true,
+            'use_pool' => false,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,

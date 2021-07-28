@@ -58,7 +58,6 @@ final class ProxyCtrl extends BaseCtrl
 
     public function __destruct()
     {
-        $this->key && Client::release($this->key);
         App::debug("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
     }
 
@@ -94,7 +93,10 @@ final class ProxyCtrl extends BaseCtrl
         try {
             $options = [
                 'pool_key' => function (Request $request) {
-                    return $this->key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                    if (!$this->key) {
+                        $this->key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                    }
+                    return $this->key;
                 },
                 'headers' => $headers
             ];
@@ -113,6 +115,7 @@ final class ProxyCtrl extends BaseCtrl
             $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
             if ($this->lc->loop === false) {
                 $this->pool->close();
+                $this->key && Client::release($this->key);
             } elseif (!$this->pool->isEmpty()) {
                 $this->pool->pop();
             }

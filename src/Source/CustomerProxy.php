@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Rabbit\Spider\Source;
 
 use Rabbit\Base\Core\LoopControl;
-use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\Spider\Manager\ProxyCtrl;
 
 class CustomerProxy extends AbstractSource
 {
@@ -47,7 +47,8 @@ class CustomerProxy extends AbstractSource
                 foreach ($this->manager->attributes as $key) {
                     $res[$key] ??= null;
                 }
-                $this->idle[] = new IP($res);
+                $this->idle[] = $ip = new IP($res);
+                $this->run($ip);
             }
         }
     }

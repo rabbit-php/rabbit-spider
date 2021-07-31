@@ -52,6 +52,7 @@ abstract class AbstractSource implements ProxyInterface
             return false;
         }
         $this->hosts[$host] = $queue;
+        $this->createCtrl();
         return true;
     }
 
@@ -80,7 +81,17 @@ abstract class AbstractSource implements ProxyInterface
         }
     }
 
-    public function createCtrl(): void
+    protected function run(IP $ip): void
+    {
+        foreach ($this->hosts as $host => $queue) {
+            if ($ip->addHost($host)) {
+                $ctrl = new ProxyCtrl($this->manager, $this, $ip, $host);
+                $ctrl->loop($queue);
+            }
+        }
+    }
+
+    private function createCtrl(): void
     {
         foreach ($this->hosts as $host => $queue) {
             foreach ($this->idle as $ip) {

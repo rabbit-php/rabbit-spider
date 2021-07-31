@@ -56,11 +56,6 @@ final class ProxyCtrl extends BaseCtrl
         $this->lc = new LoopControl(0);
     }
 
-    public function __destruct()
-    {
-        App::debug("{$this->host} source:{$this->ip->source} proxy:{$this->ip->proxy} shutdown!");
-    }
-
     public function getIP(): IP
     {
         return $this->ip;

@@ -91,9 +91,10 @@ final class ProxyManager
             }
 
             foreach ($this->sources as $source) {
+                $source->setManager($this);
                 loop(function () use ($source) {
-                    $source->loadIP($this);
-                    $source->createCtrl($this);
+                    $source->loadIP();
+                    $source->createCtrl();
                 }, $source->getLoopTime() * 1000);
             }
 

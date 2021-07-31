@@ -25,7 +25,7 @@ class CustomerProxy extends AbstractSource
         }
     }
 
-    public function loadIP(ProxyManager $manager): void
+    public function loadIP(): void
     {
         if (!$this->start) {
             $this->start = true;
@@ -44,7 +44,7 @@ class CustomerProxy extends AbstractSource
                 $res['release'] = $this->release;
                 $res['timeout'] = $this->timeout;
                 $res['duration'] = 1;
-                foreach ($manager->attributes as $key) {
+                foreach ($this->manager->attributes as $key) {
                     $res[$key] ??= null;
                 }
                 $this->idle[] = new IP($res);
@@ -57,7 +57,7 @@ class CustomerProxy extends AbstractSource
         throw new NotSupportedException("CustomerProxy no need update ip");
     }
 
-    public function flush(ProxyManager $manager): void
+    public function flush(): void
     {
         throw new NotSupportedException("flush no need update ip");
     }

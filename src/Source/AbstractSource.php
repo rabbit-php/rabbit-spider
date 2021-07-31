@@ -29,6 +29,13 @@ abstract class AbstractSource implements ProxyInterface
     protected array $delIPs = [];
     protected array $waits = [];
 
+    protected ProxyManager $manager;
+
+    public function setManager(ProxyManager $manager): void
+    {
+        $this->manager = $manager;
+    }
+
     public function getLoopTime(): int
     {
         return $this->loopTime;
@@ -73,18 +80,18 @@ abstract class AbstractSource implements ProxyInterface
         }
     }
 
-    public function createCtrl(ProxyManager $manager): void
+    public function createCtrl(): void
     {
         foreach ($this->hosts as $host => $queue) {
             foreach ($this->idle as $ip) {
                 if ($ip->addHost($host)) {
-                    $ctrl = new ProxyCtrl($manager, $this, $ip, $host);
+                    $ctrl = new ProxyCtrl($this->manager, $this, $ip, $host);
                     $ctrl->loop($queue);
                 }
             }
         }
     }
 
-    abstract public function loadIP(ProxyManager $manager): void;
-    abstract protected function flush(ProxyManager $manager): void;
+    abstract public function loadIP(): void;
+    abstract protected function flush(): void;
 }

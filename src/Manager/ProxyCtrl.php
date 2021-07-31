@@ -131,7 +131,7 @@ final class ProxyCtrl extends BaseCtrl
                         $task($this);
                     });
                 }
-            }, 0, $this->lc);
+            }, 1000, $this->lc);
         }
     }
 }

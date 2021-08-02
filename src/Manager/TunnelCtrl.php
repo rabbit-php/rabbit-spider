@@ -39,7 +39,7 @@ class TunnelCtrl extends BaseCtrl
         $this->num = (int)$num;
         $this->limit = (int)$limit;
         $this->client = new Client([
-            "use_pool" => $this->num,
+            "use_pool" => true,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,

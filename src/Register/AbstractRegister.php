@@ -12,6 +12,7 @@ abstract class AbstractRegister
     protected array $servers = [];
     protected bool $isRegist = false;
     protected string $msg;
+    protected int $tick = 10;
 
     public function __construct(string $name)
     {
@@ -33,16 +34,14 @@ abstract class AbstractRegister
     {
         $num = 0;
         $index = 0;
-        $i = 0;
         while (true) {
             foreach ($this->servers as $name => $time) {
-                if (time() - $time < $this->interval + 3) {
+                if ($name === $this->msg) {
+                    $index = $num;
+                }
+                if (time() < $time) {
                     $num++;
                 }
-                if ($name === $this->msg) {
-                    $index = $i;
-                }
-                $i++;
             }
             if ($num > 0) {
                 break;

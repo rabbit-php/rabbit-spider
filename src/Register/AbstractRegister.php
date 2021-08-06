@@ -41,7 +41,7 @@ abstract class AbstractRegister
                 if ($name === $this->msg) {
                     $index = $num;
                 }
-                if (time() < (int)$time) {
+                if (time() < (int)$time + $this->interval) {
                     $num++;
                 }
             }

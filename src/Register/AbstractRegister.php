@@ -34,13 +34,14 @@ abstract class AbstractRegister
     {
         $num = 0;
         $index = 0;
-        ksort($this->servers, SORT_STRING);
         while (true) {
-            foreach ($this->servers as $name => $time) {
+            $servers = $this->getServers();
+            ksort($servers);
+            foreach ($servers as $name => $time) {
                 if ($name === $this->msg) {
                     $index = $num;
                 }
-                if (time() < $time) {
+                if (time() < (int)$time) {
                     $num++;
                 }
             }
@@ -53,4 +54,5 @@ abstract class AbstractRegister
     }
 
     abstract public function regist(): void;
+    abstract public function getServers(): array;
 }

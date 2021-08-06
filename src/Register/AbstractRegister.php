@@ -17,7 +17,7 @@ abstract class AbstractRegister
     public function __construct(string $name)
     {
         $this->name = $name;
-        $this->msg = current(swoole_get_local_ip()) . ':' . getmygid();
+        $this->msg = current(swoole_get_local_ip()) . ':' . getmypid();
     }
 
     public function getStatus(): bool

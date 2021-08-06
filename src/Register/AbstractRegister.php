@@ -34,6 +34,7 @@ abstract class AbstractRegister
     {
         $num = 0;
         $index = 0;
+        ksort($this->servers, SORT_STRING);
         while (true) {
             foreach ($this->servers as $name => $time) {
                 if ($name === $this->msg) {

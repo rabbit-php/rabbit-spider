@@ -32,11 +32,11 @@ class ProxyHelper
             $res['pass'] = isset($parsed_url['pass']) ? $parsed_url['pass'] : '';
             $res['num'] = isset($parsed_url['path']) ? (int)str_replace('/', '', $parsed_url['path']) : 3;
             parse_str($parsed_url['query'] ?? '', $query);
-            $res['checktime'] = ArrayHelper::getValue($query, 'checktime', $this->checktime);
+            $res['checktime'] = ArrayHelper::getValue($query, 'checktime', 60);
             $res['ip2long'] = ip2long($res['ip']);
-            $res['source'] = $this->source;
-            $res['release'] = $this->release;
-            $res['timeout'] = $this->timeout;
+            $res['source'] = 0;
+            $res['release'] = false;
+            $res['timeout'] = 10;
             $res['duration'] = 1;
             $local = new LocalCtrl(new IP($res));
             $local->setManager($manager);

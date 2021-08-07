@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
+use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Spider\Manager\LocalCtrl;
 use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Spider\Source\IP;
@@ -17,18 +18,30 @@ class ProxyHelper
 {
     public ProxyManager $manager;
 
-    protected LocalCtrl $local;
+    protected array $local = [];
 
-    public function __construct(ProxyManager $manager, LocalCtrl $local = null)
+    public function __construct(ProxyManager $manager, string $ips = null)
     {
         $this->manager = $manager;
-        $this->local = $local ?? new LocalCtrl(new IP([
-            'ip' => '127.0.0.1',
-            'timeout' => $manager->timeout,
-            'release' => false,
-            'num' => -1
-        ]));
-        $this->local->setManager($manager);
+        $ips = $ips ?? 'proxy://127.0.0.1';
+        foreach (explode(',', $ips) as $ip) {
+            $parsed_url = parse_url($ip);
+            $res['ip'] = isset($parsed_url['host']) ? $parsed_url['host'] : null;
+            $res['port'] = isset($parsed_url['port']) ? (int)$parsed_url['port'] : null;
+            $res['user'] = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+            $res['pass'] = isset($parsed_url['pass']) ? $parsed_url['pass'] : '';
+            $res['num'] = isset($parsed_url['path']) ? (int)str_replace('/', '', $parsed_url['path']) : 3;
+            parse_str($parsed_url['query'] ?? '', $query);
+            $res['checktime'] = ArrayHelper::getValue($query, 'checktime', $this->checktime);
+            $res['ip2long'] = ip2long($res['ip']);
+            $res['source'] = $this->source;
+            $res['release'] = $this->release;
+            $res['timeout'] = $this->timeout;
+            $res['duration'] = 1;
+            $local = new LocalCtrl(new IP($res));
+            $local->setManager($manager);
+            $this->local[] = $local;
+        }
     }
 
     public function tunnel(string $url, string $tunnel, int $retry = 5): ?SpiderResponse
@@ -55,6 +68,6 @@ class ProxyHelper
 
     public function getUrlContents(string $url, array $headers = []): ?SpiderResponse
     {
-        return $this->local->proxy($url, $headers);
+        return $this->local[array_rand($this->local)]->proxy($url, $headers);
     }
 }

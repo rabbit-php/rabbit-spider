@@ -7,7 +7,6 @@ namespace Rabbit\Spider\Source;
 use Rabbit\Base\Core\LoopControl;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
-use Rabbit\Spider\Manager\ProxyCtrl;
 
 class CustomerProxy extends AbstractSource
 {

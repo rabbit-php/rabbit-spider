@@ -33,7 +33,6 @@ abstract class AbstractRegister
     public function getWorker(): array
     {
         $num = 0;
-        $index = 0;
         while (true) {
             $servers = $this->getServers();
             ksort($servers);
@@ -45,7 +44,7 @@ abstract class AbstractRegister
                     $num++;
                 }
             }
-            if ($num > 0) {
+            if (isset($index) && $num > 0) {
                 break;
             }
             sleep(3);

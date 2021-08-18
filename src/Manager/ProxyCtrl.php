@@ -108,11 +108,10 @@ final class ProxyCtrl extends BaseCtrl
                 $this->ip->duration = IP::IP_FAILED;
             }
             $this->ip->release && $this->source->update($this->host, $this->ip, $this->lc);
+            $this->pool->pop(1);
             if ($this->lc->loop === false) {
                 $this->pool->close();
                 $this->key && Client::release($this->key);
-            } elseif (!$this->pool->isEmpty()) {
-                $this->pool->pop();
             }
             return $response;
         }
@@ -123,7 +122,7 @@ final class ProxyCtrl extends BaseCtrl
         if (!$this->isRunning) {
             $this->isRunning = true;
             loop(function () use ($queue) {
-                if (!$this->pool->push(1) || $this->lc->loop === false) {
+                if (!$this->pool->push(1, $this->ip->timeout) || $this->lc->loop === false) {
                     return;
                 }
                 if (false !== $task = $queue->pop()) {

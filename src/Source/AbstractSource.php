@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
-use Rabbit\Base\Core\LoopControl;
-use Rabbit\Spider\Manager\ProxyCtrl;
 use Rabbit\Spider\Manager\ProxyManager;
 use Rabbit\Spider\ProxyInterface;
+use SplQueue;
 
 abstract class AbstractSource implements ProxyInterface
 {
@@ -21,19 +20,31 @@ abstract class AbstractSource implements ProxyInterface
 
     protected bool $release = true;
 
-    protected array $hosts = [];
-
     protected int $timeout = 5;
 
     protected array $idle = [];
+    protected SplQueue $queue;
     protected array $delIPs = [];
     protected array $waits = [];
 
-    protected ProxyManager $manager;
+    protected ?ProxyManager $manager = null;
+
+    protected int $yield = 0;
+
+    public function __construct()
+    {
+        $this->queue = new SplQueue();
+        $this->resumes = new SplQueue();
+    }
 
     public function setManager(ProxyManager $manager): void
     {
         $this->manager = $manager;
+    }
+
+    public function getManager(): ?ProxyManager
+    {
+        return $this->manager;
     }
 
     public function getLoopTime(): int
@@ -46,60 +57,50 @@ abstract class AbstractSource implements ProxyInterface
         return $this->size;
     }
 
-    public function addHost(string $host, $queue): bool
+    public function update(string $domain, IP $ip): bool
     {
-        if ($this->hosts[$host] ?? false) {
-            return false;
-        }
-        $this->hosts[$host] = $queue;
-        $this->createCtrl();
-        return true;
-    }
-
-    public function getHost(): array
-    {
-        return $this->hosts;
-    }
-
-    public function update(string $domain, IP $ip, LoopControl $lc): void
-    {
-        if ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000) {
-            $lc->shutdown();
-
+        $res = false;
+        $key = "{$ip->ip}:{$ip->port}";
+        if ($ip->release && ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000)) {
             if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$domain][] = $ip->toArray();
             } else {
                 $this->delIPs[] = $ip->toArray();
             }
-            $key = "{$ip->ip}:{$ip->port}";
             if ($this->idle[$key] ?? false) {
                 if (empty($ip->removeHost($domain))) {
                     unset($this->idle[$key]);
                     unset($ip);
                 }
             }
+            $res = true;
+        } elseif ($this->idle[$key] ?? false) {
+            $this->queue->enqueue($ip);
         }
+        if ($this->yield > 0) {
+            \Co::resume($this->yield);
+            $this->yield = 0;
+        }
+        return $res;
     }
 
-    protected function run(IP $ip): void
+    public function getIP(): IP
     {
-        foreach ($this->hosts as $host => $queue) {
-            if ($ip->addHost($host)) {
-                $ctrl = new ProxyCtrl($this->manager, $this, $ip, $host);
-                $ctrl->loop($queue);
-            }
+        while ($this->queue->isEmpty()) {
+            $this->yield = \Co::getCid();
+            \Co::yield();
         }
+        return $this->queue->dequeue();
     }
 
-    private function createCtrl(): void
+    public function run(IP $ip): void
     {
-        foreach ($this->hosts as $host => $queue) {
-            foreach ($this->idle as $ip) {
-                if ($ip->addHost($host)) {
-                    $ctrl = new ProxyCtrl($this->manager, $this, $ip, $host);
-                    $ctrl->loop($queue);
-                }
-            }
+        for ($i = 0; $i < $ip->num; $i++) {
+            $this->queue->enqueue($ip);
+        }
+        if ($this->yield !== 0) {
+            \Co::resume($this->yield);
+            $this->yield = 0;
         }
     }
 

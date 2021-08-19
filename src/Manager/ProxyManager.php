@@ -6,15 +6,14 @@ namespace Rabbit\Spider\Manager;
 
 use Rabbit\Spider\SpiderResponse;
 use Rabbit\Spider\Stores\IProxyStore;
-use Rabbit\Base\Exception\InvalidArgumentException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\Expression;
 use Rabbit\Spider\Source\IP;
+use Throwable;
 
 final class ProxyManager
 {
     private bool $isRunning = false;
-    private ?array $tc = null;
 
     protected IProxyStore $store;
 
@@ -26,27 +25,15 @@ final class ProxyManager
 
     public int $timeout = 10;
 
-    private array $hosts = [];
-
     private array $sources = [];
 
-    public function __construct(IProxyStore $store, array $sources = null, string $tc = null)
+    public function __construct(IProxyStore $store, array $sources = null)
     {
         $this->store = $store;
         $this->sources = $sources ?? $this->sources;
-        if ($tc !== null) {
-            $tcArr = explode(',', $tc);
-            foreach ($tcArr as $val) {
-                $parsed = parse_url($val);
-                parse_str($parsed['query'] ?? [], $query);
-                $ctrl = new TunnelCtrl($this, $val, isset($query['run']) ? (bool)$query['run'] : false);
-                $this->tc[$parsed['scheme']] = $ctrl;
-            }
-        }
     }
 
-
-    public function getQueue()
+    protected function getQueue()
     {
         if ($this->queue === null) {
             $this->queue = makeChannel();
@@ -66,52 +53,26 @@ final class ProxyManager
         return $this->store;
     }
 
-    public function getTunnels(): array
-    {
-        return $this->tc ?? [];
-    }
-
-    public function getTunnel(string $name): BaseCtrl
-    {
-        if ($this->tc[$name] ?? false) {
-            return $this->tc[$name];
-        }
-        throw new InvalidArgumentException("No $name tunnel!");
-    }
-
     public function start(): void
     {
         if (!$this->isRunning) {
             $this->isRunning = true;
-
-            if ($this->tc) {
-                foreach ($this->tc as $tunnel) {
-                    $tunnel->loop($this->getQueue());
-                }
-            }
-
+            $queue = $this->getQueue();
             foreach ($this->sources as $source) {
                 $source->setManager($this);
                 loop(function () use ($source) {
                     $source->loadIP();
                 }, $source->getLoopTime() * 1000);
+                loop(function () use ($source, $queue) {
+                    $queue->push($source->getIP());
+                });
             }
-
-            loop(function () {
-                $task = $this->queue->pop();
-                $host = $task->getDomain();
-                if (!array_key_exists($host, $this->hosts)) {
-                    $queue = makeChannel();
-                    $this->hosts[$host] = $queue;
-                    foreach ($this->sources as $source) {
-                        $source->addHost($host, $queue);
-                    }
-                } else {
-                    $queue = $this->hosts[$host];
-                }
-                $queue->push($task);
-            }, 0);
         }
+    }
+
+    public function getIP(): IP
+    {
+        return $this->queue->pop();
     }
 
     public function save(string $domain, array &$items): void
@@ -144,5 +105,22 @@ final class ProxyManager
         if (!empty($updateArr)) {
             $this->store->save($updateArr, $onlyUpdate);
         }
+    }
+
+    public function proxy(string $url, string $name = 'local', array $headers = [], int $retry = 5): ?SpiderResponse
+    {
+        if (!($this->sources[$name] ?? false)) {
+            return null;
+        }
+        $ctrl = $this->sources[$name];
+        $ctrl->loadIP();
+        while ($retry--) {
+            try {
+                return $ctrl->getIP()->proxy($url);
+            } catch (Throwable $e) {
+                usleep(300 * 1000);
+            }
+        }
+        return null;
     }
 }

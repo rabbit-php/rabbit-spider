@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Rabbit\Spider\Source;
 
 use Rabbit\Base\Contract\ArrayAble;
+use Rabbit\HttpClient\Client;
+use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
 use Rabbit\Model\Model;
+use Rabbit\Spider\Exception\EmptyException;
+use Rabbit\Spider\SpiderResponse;
+use Swlib\Saber\Request;
+use Throwable;
 
 class IP extends Model implements ArrayAble
 {
@@ -25,8 +31,17 @@ class IP extends Model implements ArrayAble
 
     private array $hosts = [];
 
+    protected AbstractSource $ctrl;
+
     const IP_VCODE = 0;
     const IP_FAILED = -1;
+
+    public function __construct(AbstractSource $ctrl, array $columns = [])
+    {
+        parent::__construct($columns);
+        $this->ctrl = $ctrl;
+        $this->validate();
+    }
 
     public function rules(): array
     {
@@ -65,5 +80,64 @@ class IP extends Model implements ArrayAble
     public function toArray(): array
     {
         return get_object_vars($this);
+    }
+
+    public function proxy(string $url, array $options = []): SpiderResponse
+    {
+        $contents = $this->request($url, $options);
+        if ($contents->code === SpiderResponse::CODE_EMPTY) {
+            throw new EmptyException("No body with response");
+        } elseif (!$contents->isOK) {
+            throw new BadRequestHttpException("got error! code={$contents->code}");
+        }
+        return $contents;
+    }
+
+    private function request(string $url, array $headers = []): SpiderResponse
+    {
+        $response = new SpiderResponse();
+        $key = null;
+        try {
+            $options = [
+                'use_pool' => true,
+                "target" => true,
+                "iconv" => false,
+                "redirect" => 0,
+                'timeout'  => $this->timeout,
+                'headers'  => [
+                    'DNT' => "1",
+                    'Accept' => '*/*',
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36'
+                ],
+                'pool_key' => function (Request $request) use (&$key) {
+                    $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                    return $key;
+                },
+                'headers' => $headers
+            ];
+            if (!empty($this->proxy)) {
+                $options['proxy'] = [
+                    'http' => "tcp://{$this->proxy}",
+                    'https' => "tcp://{$this->proxy}",
+                ];
+            }
+            $response->setResponse((new Client())->get($url, $options));
+        } catch (Throwable $e) {
+            $response->code = $e->getCode();
+        } finally {
+            $this->ctrl->getManager()->verification($url, $response);
+            if ($response->code === SpiderResponse::CODE_VERCODE) {
+                $this->duration = self::IP_VCODE;
+            } elseif ($response->isOK && $this->duration > 0 && (null !== $res = $response->getResponse())) {
+                $this->duration = $res->getDuration();
+            } else {
+                $this->duration = self::IP_FAILED;
+            }
+            $host = parse_url($url, PHP_URL_HOST);
+            if ($this->ctrl->update($host, $this)) {
+                $key && Client::release($key);
+            }
+            return $response;
+        }
     }
 }

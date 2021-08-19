@@ -114,7 +114,8 @@ final class ProxyManager
             return null;
         }
         $ctrl = $this->sources[$name];
-        $ctrl->loadIP();
+        $ctrl->setManager($this);
+        $ctrl->loadIP(true);
         while ($retry--) {
             try {
                 return $ctrl->getIP()->proxy($url);

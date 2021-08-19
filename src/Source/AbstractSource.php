@@ -34,7 +34,6 @@ abstract class AbstractSource implements ProxyInterface
     public function __construct()
     {
         $this->queue = new SplQueue();
-        $this->resumes = new SplQueue();
     }
 
     public function setManager(ProxyManager $manager): void
@@ -77,10 +76,7 @@ abstract class AbstractSource implements ProxyInterface
         } elseif ($this->idle[$key] ?? false) {
             $this->queue->enqueue($ip);
         }
-        if ($this->yield > 0) {
-            \Co::resume($this->yield);
-            $this->yield = 0;
-        }
+        $this->resume();
         return $res;
     }
 
@@ -98,7 +94,11 @@ abstract class AbstractSource implements ProxyInterface
         for ($i = 0; $i < $ip->num; $i++) {
             $this->queue->enqueue($ip);
         }
-        if ($this->yield !== 0) {
+    }
+
+    public function resume(): void
+    {
+        if ($this->yield > 0) {
             \Co::resume($this->yield);
             $this->yield = 0;
         }

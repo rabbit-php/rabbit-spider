@@ -62,6 +62,7 @@ final class ProxyManager
                 $source->setManager($this);
                 loop(function () use ($source) {
                     $source->loadIP();
+                    $source->resume();
                 }, $source->getLoopTime() * 1000);
                 loop(function () use ($source, $queue) {
                     $queue->push($source->getIP());

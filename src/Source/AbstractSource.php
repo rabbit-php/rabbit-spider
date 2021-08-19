@@ -99,8 +99,8 @@ abstract class AbstractSource implements ProxyInterface
     public function resume(): void
     {
         if ($this->yield > 0) {
-            \Co::resume($this->yield);
             $this->yield = 0;
+            \Co::resume($this->yield);
         }
     }
 

@@ -29,8 +29,6 @@ class IP extends Model implements ArrayAble
     public int $timeout = 10;
     public ?int $duration = 1;
 
-    private array $hosts = [];
-
     protected AbstractSource $ctrl;
 
     const IP_VCODE = 0;
@@ -55,26 +53,6 @@ class IP extends Model implements ArrayAble
                 return "$user$pass$host$port";
             }]
         ];
-    }
-
-    public function addHost(string $host): bool
-    {
-        if (!array_key_exists($host, $this->hosts)) {
-            $this->hosts[$host] = $host;
-            return true;
-        }
-        return false;
-    }
-
-    public function getHost(): array
-    {
-        return $this->hosts;
-    }
-
-    public function removeHost(string $host): array
-    {
-        unset($this->hosts[$host]);
-        return $this->hosts;
     }
 
     public function toArray(): array

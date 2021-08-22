@@ -29,12 +29,12 @@ class IP extends Model implements ArrayAble
     public int $timeout = 10;
     public ?int $duration = 1;
 
-    protected AbstractSource $ctrl;
+    protected ?AbstractSource $ctrl = null;
 
     const IP_VCODE = 0;
     const IP_FAILED = -1;
 
-    public function __construct(AbstractSource $ctrl, array $columns = [])
+    public function __construct(AbstractSource $ctrl = null, array $columns = [])
     {
         parent::__construct($columns);
         $this->ctrl = $ctrl;

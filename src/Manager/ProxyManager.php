@@ -119,7 +119,8 @@ final class ProxyManager
         $idle = $ctrl->getIdle();
         while ($retry--) {
             try {
-                $ip = $idle[array_rand($idle)];
+                $ip = clone $idle[array_rand($idle)];
+                $ip->release = false;
                 return $ip->proxy($url);
             } catch (Throwable $e) {
                 usleep(300 * 1000);

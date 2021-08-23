@@ -16,7 +16,6 @@ class TunnelProxy extends AbstractSource
     public function __construct(string $ip)
     {
         parent::__construct();
-        $this->release = false;
         $this->source = -2;
         $this->ip = $ip;
     }

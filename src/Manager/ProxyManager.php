@@ -108,7 +108,7 @@ final class ProxyManager
         }
     }
 
-    public function proxy(string $url, string $name = 'local', array $headers = [], int $retry = 5): ?SpiderResponse
+    public function proxy(string $url, string $name = 'local', array $headers = [], int $retry = 5): SpiderResponse
     {
         if (!($this->sources[$name] ?? false)) {
             return null;

@@ -144,12 +144,14 @@ class IP extends Model implements ArrayAble
                     $this->duration = self::IP_FAILED;
                 }
                 $host = parse_url($url, PHP_URL_HOST);
-                if ($this->ctrl->update($host, $this)) {
+                if ($this->release && $this->ctrl->update($host, $this)) {
                     $key && Client::release($key);
                 }
             } finally {
-                $this->hostNum[$host]++;
-                $this->lc[$host]->start();
+                if ($this->release) {
+                    $this->hostNum[$host]++;
+                    $this->lc[$host]->start();
+                }
             }
             return $response;
         }

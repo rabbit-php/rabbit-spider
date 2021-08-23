@@ -116,9 +116,11 @@ final class ProxyManager
         $ctrl = $this->sources[$name];
         $ctrl->setManager($this);
         $ctrl->loadIP(true);
+        $idle = $ctrl->getIdle();
         while ($retry--) {
             try {
-                return $ctrl->getIP()->proxy($url);
+                $ip = $idle[array_rand($idle)];
+                return $ip->proxy($url);
             } catch (Throwable $e) {
                 usleep(300 * 1000);
             }

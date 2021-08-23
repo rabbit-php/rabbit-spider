@@ -56,6 +56,11 @@ abstract class AbstractSource implements ProxyInterface
         return $this->size;
     }
 
+    public function getIdle(): array
+    {
+        return $this->idle;
+    }
+
     public function update(string $domain, IP $ip): bool
     {
         $res = false;

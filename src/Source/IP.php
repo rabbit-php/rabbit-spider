@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rabbit\Spider\Source;
 
 use Rabbit\Base\Contract\ArrayAble;
+use Rabbit\Base\Core\LoopControl;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
 use Rabbit\Model\Model;
@@ -23,18 +24,20 @@ class IP extends Model implements ArrayAble
     public ?string $pass = null;
     public int $num = 10;
     public bool $release = true;
-    public int $checktime;
+    public ?int $checktime = null;
     public ?string $proxy = null;
     public int $source = -1;
     public int $timeout = 10;
     public ?int $duration = 1;
 
     protected ?AbstractSource $ctrl = null;
+    protected array $lc = [];
+    protected array $hostNum = [];
 
     const IP_VCODE = 0;
     const IP_FAILED = -1;
 
-    public function __construct(AbstractSource $ctrl = null, array $columns = [])
+    public function __construct(array $columns = [], AbstractSource $ctrl = null)
     {
         parent::__construct($columns);
         $this->ctrl = $ctrl;
@@ -53,6 +56,34 @@ class IP extends Model implements ArrayAble
                 return "$user$pass$host$port";
             }]
         ];
+    }
+
+    public function loop(): void
+    {
+        foreach ($this->ctrl->getManager()->getQueue() as $host => $queue) {
+            if (!($this->lc[$host] ?? false)) {
+                $this->lc[$host] =  new LoopControl(0);
+                $this->hostNum[$host] = $this->num;
+                loop(function () use ($queue, $host) {
+                    if ($this->hostNum[$host] === 0) {
+                        $this->lc[$host]->stop();
+                    }
+                    $queue->push($this);
+                    $this->hostNum[$host]--;
+                }, 0, $this->lc[$host]);
+            }
+        }
+    }
+
+    public function shutdown(string $host = null): void
+    {
+        if ($host === null) {
+            foreach ($this->lc as $lc) {
+                $lc->shutdown();
+            }
+        } elseif ($this->lc[$host] ?? false) {
+            $this->lc[$host]->shutdown();
+        }
     }
 
     public function toArray(): array
@@ -103,17 +134,22 @@ class IP extends Model implements ArrayAble
         } catch (Throwable $e) {
             $response->code = $e->getCode();
         } finally {
-            $this->ctrl->getManager()->verification($url, $response);
-            if ($response->code === SpiderResponse::CODE_VERCODE) {
-                $this->duration = self::IP_VCODE;
-            } elseif ($response->isOK && $this->duration > 0 && (null !== $res = $response->getResponse())) {
-                $this->duration = $res->getDuration();
-            } else {
-                $this->duration = self::IP_FAILED;
-            }
-            $host = parse_url($url, PHP_URL_HOST);
-            if ($this->ctrl->update($host, $this)) {
-                $key && Client::release($key);
+            try {
+                $this->ctrl->getManager()->verification($url, $response);
+                if ($response->code === SpiderResponse::CODE_VERCODE) {
+                    $this->duration = self::IP_VCODE;
+                } elseif ($response->isOK && $this->duration > 0 && (null !== $res = $response->getResponse())) {
+                    $this->duration = $res->getDuration();
+                } else {
+                    $this->duration = self::IP_FAILED;
+                }
+                $host = parse_url($url, PHP_URL_HOST);
+                if ($this->ctrl->update($host, $this)) {
+                    $key && Client::release($key);
+                }
+            } finally {
+                $this->hostNum[$host]++;
+                $this->lc[$host]->start();
             }
             return $response;
         }

@@ -13,32 +13,23 @@ use Throwable;
 
 final class ProxyManager
 {
-    private bool $isRunning = false;
-
     protected IProxyStore $store;
 
     public array $attributes = ['ip2long', 'ip', 'port', 'anonymity', 'protocol', 'location', 'score', 'duration', 'source'];
 
     private array $checkCode = [];
 
-    protected $queue;
+    protected array $queue = [];
 
     public int $timeout = 10;
 
     private array $sources = [];
+    private bool $running = false;
 
     public function __construct(IProxyStore $store, array $sources = null)
     {
         $this->store = $store;
         $this->sources = $sources ?? $this->sources;
-    }
-
-    protected function getQueue()
-    {
-        if ($this->queue === null) {
-            $this->queue = makeChannel();
-        }
-        return $this->queue;
     }
 
     public function verification(string $url, SpiderResponse $response): void
@@ -53,27 +44,29 @@ final class ProxyManager
         return $this->store;
     }
 
-    public function start(): void
+    public function getQueue(): array
     {
-        if (!$this->isRunning) {
-            $this->isRunning = true;
-            $queue = $this->getQueue();
+        return $this->queue;
+    }
+
+    public function getIP(string $host): IP
+    {
+        if (!$this->running) {
+            $this->running = true;
             foreach ($this->sources as $source) {
                 $source->setManager($this);
                 loop(function () use ($source) {
                     $source->loadIP();
-                    $source->resume();
                 }, $source->getLoopTime() * 1000);
-                loop(function () use ($source, $queue) {
-                    $queue->push($source->getIP());
-                });
             }
         }
-    }
-
-    public function getIP(): IP
-    {
-        return $this->queue->pop();
+        if (!($this->queue[$host] ?? false)) {
+            $this->queue[$host] = makeChannel();
+            foreach ($this->sources as $source) {
+                $source->run();
+            }
+        }
+        return $this->queue[$host]->pop();
     }
 
     public function save(string $domain, array &$items): void

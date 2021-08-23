@@ -46,7 +46,7 @@ class GetProxy extends AbstractProxyPlugin
                 $res['user'] = isset($parsed_url['user']) ? $parsed_url['user'] : '';
                 $res['pass'] = isset($parsed_url['pass']) ? $parsed_url['pass'] : '';
                 $res['ip2long'] = ip2long($res['ip']);
-                $ip = new IP(null, $res);
+                $ip = new IP($res);
                 $ip->validate();
                 $this->proxy[$ip->ip2long] = $ip;
             }

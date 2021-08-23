@@ -15,7 +15,6 @@ class TunnelProxy extends AbstractSource
 
     public function __construct(string $ip)
     {
-        parent::__construct();
         $this->source = -2;
         $this->ip = $ip;
     }
@@ -44,8 +43,8 @@ class TunnelProxy extends AbstractSource
                 $res[$key] ??= null;
             }
             $key = "{$res['ip']}:{$res['port']}";
-            $this->idle[$key] = new IP($this, $res);
-            $this->run($this->idle[$key]);
+            $this->idle[$key] = new IP($res, $this);
+            $this->run();
         }
     }
 

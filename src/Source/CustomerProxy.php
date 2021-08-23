@@ -17,7 +17,6 @@ class CustomerProxy extends AbstractSource
 
     public function __construct(string $ips)
     {
-        parent::__construct();
         foreach (explode(',', $ips) as $ip) {
             $this->ips[] = $ip;
         }
@@ -46,9 +45,9 @@ class CustomerProxy extends AbstractSource
                     $res[$key] ??= null;
                 }
                 $key = "{$res['ip']}:{$res['port']}";
-                $this->idle[$key] = new IP($this, $res);
-                $this->run($this->idle[$key]);
+                $this->idle[$key] = new IP($res, $this);
             }
+            $this->run();
         }
     }
 

@@ -61,7 +61,6 @@ abstract class AbstractSource implements ProxyInterface
             } else {
                 $this->delIPs[] = $ip->toArray();
             }
-            $ip->shutdown();
             unset($this->idle[$key]);
             return true;
         }

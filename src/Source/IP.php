@@ -148,7 +148,9 @@ class IP extends Model implements ArrayAble
                 }
                 $host = parse_url($url, PHP_URL_HOST);
                 if ($this->release && $this->ctrl->update($host, $this)) {
+                    $this->shutdown();
                     $key && Client::release($key);
+                    return $response;
                 }
             } finally {
                 if ($this->release) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Manager;
 
+use Rabbit\Base\Core\SplChannel;
 use Rabbit\Spider\SpiderResponse;
 use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Helper\ArrayHelper;
@@ -61,7 +62,7 @@ final class ProxyManager
             }
         }
         if (!($this->queue[$host] ?? false)) {
-            $this->queue[$host] = makeChannel();
+            $this->queue[$host] = new SplChannel();
             foreach ($this->sources as $source) {
                 $source->run();
             }

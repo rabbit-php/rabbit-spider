@@ -62,7 +62,7 @@ class IP extends Model implements ArrayAble
     {
         foreach ($this->ctrl->getManager()->getQueue() as $host => $queue) {
             if (!($this->lc[$host] ?? false)) {
-                $this->lc[$host] =  new LoopControl(0);
+                $this->lc[$host] = new LoopControl(0);
                 $this->hostNum[$host] = $this->num;
                 loop(function () use ($queue, $host) {
                     if ($this->hostNum[$host] === 0) {

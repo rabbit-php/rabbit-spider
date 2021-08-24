@@ -37,11 +37,25 @@ class IP extends Model implements ArrayAble
     const IP_VCODE = 0;
     const IP_FAILED = -1;
 
+    protected Client $client;
+
     public function __construct(array $columns = [], AbstractSource $ctrl = null)
     {
         parent::__construct($columns);
         $this->ctrl = $ctrl;
         $this->validate();
+
+        $this->client = new Client([
+            'use_pool' => true,
+            "target" => true,
+            "iconv" => false,
+            "redirect" => 0,
+            'timeout'  => $this->timeout,
+            'headers'  => [
+                'DNT' => "1",
+                'Accept' => '*/*',
+            ]
+        ]);
     }
 
     public function rules(): array
@@ -111,16 +125,6 @@ class IP extends Model implements ArrayAble
         $key = null;
         try {
             $options = [
-                'use_pool' => true,
-                "target" => true,
-                "iconv" => false,
-                "redirect" => 0,
-                'timeout'  => $this->timeout,
-                'headers'  => [
-                    'DNT' => "1",
-                    'Accept' => '*/*',
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36'
-                ],
                 'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
@@ -133,7 +137,7 @@ class IP extends Model implements ArrayAble
                     'https' => "tcp://{$this->proxy}",
                 ];
             }
-            $response->setResponse((new Client())->get($url, $options));
+            $response->setResponse($this->client->get($url, $options));
         } catch (Throwable $e) {
             $response->code = $e->getCode();
         } finally {
@@ -148,9 +152,7 @@ class IP extends Model implements ArrayAble
                 }
                 $host = parse_url($url, PHP_URL_HOST);
                 if ($this->release && $this->ctrl->update($host, $this)) {
-                    $this->shutdown();
                     $key && Client::release($key);
-                    return $response;
                 }
             } finally {
                 if ($this->release) {

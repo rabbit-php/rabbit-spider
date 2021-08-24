@@ -67,7 +67,7 @@ final class ProxyManager
                 $source->run();
             }
         }
-        return $this->queue[$host]->pop();
+        return $this->queue[$host]->dequeue();
     }
 
     public function save(string $domain, array &$items): void

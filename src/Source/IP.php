@@ -85,7 +85,7 @@ class IP extends Model implements ArrayAble
                             return;
                         }
                     }
-                    $queue->push($this);
+                    $queue->enqueue($this);
                     $this->hostNum[$host]--;
                 }, 0, $this->lc[$host]);
             }

@@ -67,6 +67,9 @@ class IP extends Model implements ArrayAble
                 loop(function () use ($queue, $host) {
                     if ($this->hostNum[$host] === 0) {
                         $this->lc[$host]->stop();
+                        if ($this->lc[$host]->loop === false) {
+                            return;
+                        }
                     }
                     $queue->push($this);
                     $this->hostNum[$host]--;

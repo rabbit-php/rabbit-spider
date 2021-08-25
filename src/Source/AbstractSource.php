@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Rabbit\Spider\Source;
 
 use Rabbit\Spider\Manager\ProxyManager;
-use Rabbit\Spider\ProxyInterface;
 
-abstract class AbstractSource implements ProxyInterface
+abstract class AbstractSource
 {
     protected int $loopTime = 10;
 

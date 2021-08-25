@@ -62,7 +62,7 @@ abstract class AbstractSource
             }
             unset($this->idle[$key]);
             return true;
-        } elseif ($ip->release && !($this->idle[$key])) {
+        } elseif ($ip->release && !($this->idle[$key] ?? false)) {
             $this->manager->getQueue()[$host]->enqueue($ip);
         }
         return false;

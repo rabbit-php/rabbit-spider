@@ -29,7 +29,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
             $this->size,
             $this->maxSize
         ] = ArrayHelper::getValueByArray($this->config, ['tunnel', 'size', 'maxSize'], [$this->tunnel, $this->size, $this->maxSize]);
-        $this->channel = new SplChannel();
+        $this->channel = makeChannel($this->maxSize);
         $this->regist = getDI('register')->get($this->taskName);
         $this->regist->regist();
         $this->workerName = $this->regist->getMsg();

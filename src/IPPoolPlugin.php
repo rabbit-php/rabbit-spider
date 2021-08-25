@@ -14,7 +14,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     protected ?string $tunnel = null;
     protected AbstractRegister $regist;
 
-    protected SplChannel $channel;
+    protected $channel;
     protected int $size = 1000;
     protected int $maxSize = 20000;
     protected array $runItems = [];

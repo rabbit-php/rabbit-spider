@@ -53,22 +53,31 @@ abstract class AbstractSource
 
     public function release(string $host, IP $ip): bool
     {
+        $key = "{$ip->ip}:{$ip->port}";
         if ($ip->source >= 0 && ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000)) {
             if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$host][] = $ip->toArray();
             } else {
                 $this->delIPs[] = $ip->toArray();
             }
-            unset($this->idle["{$ip->ip}:{$ip->port}"]);
+            unset($this->idle[$key]);
             return true;
+        } elseif ($ip->release && !($this->idle[$key])) {
+            $this->manager->getQueue()[$host]->enqueue($ip);
         }
         return false;
     }
 
     public function run(): void
     {
-        foreach ($this->idle as $ip) {
-            $ip->loop();
+        foreach ($this->manager->getQueue() as $host => $queue) {
+            foreach ($this->idle as $ip) {
+                for ($i = 0; $i < $ip->num; $i++) {
+                    if ($ip->addHost($host)) {
+                        $queue->enqueue($ip);
+                    }
+                }
+            }
         }
     }
 

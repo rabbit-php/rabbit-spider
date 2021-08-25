@@ -52,16 +52,15 @@ abstract class AbstractSource implements ProxyInterface
         return $this->idle;
     }
 
-    public function update(string $host, IP $ip): bool
+    public function release(string $host, IP $ip): bool
     {
-        $key = "{$ip->ip}:{$ip->port}";
         if ($ip->source >= 0 && ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000)) {
             if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$host][] = $ip->toArray();
             } else {
                 $this->delIPs[] = $ip->toArray();
             }
-            unset($this->idle[$key]);
+            unset($this->idle["{$ip->ip}:{$ip->port}"]);
             return true;
         }
         return false;

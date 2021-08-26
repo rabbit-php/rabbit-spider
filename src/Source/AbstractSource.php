@@ -61,6 +61,9 @@ abstract class AbstractSource
                 $this->delIPs[] = $ip->toArray();
             }
             unset($this->idle[$key]);
+            if (count($this->idle) === 0) {
+                array_slice($this->idle, 0, null, true);
+            }
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {
             $this->manager->getQueue()[$host]->enqueue($ip);

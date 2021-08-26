@@ -48,7 +48,11 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     public function start(): void
     {
-        if (count($this->runItems) < $this->maxSize && $this->cid > 0) {
+        $count = count($this->runItems);
+        if ($count === 0) {
+            array_slice($this->runItems, 0, null, true);
+        }
+        if ($count < $this->maxSize && $this->cid > 0) {
             $cid = $this->cid;
             $this->cid = 0;
             Coroutine::resume($cid);

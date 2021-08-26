@@ -62,7 +62,7 @@ abstract class AbstractSource
             }
             unset($this->idle[$key]);
             if (count($this->idle) === 0) {
-                array_slice($this->idle, 0, null, true);
+                array_splice($this->idle, 0, null, true);
             }
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {

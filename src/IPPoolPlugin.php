@@ -50,7 +50,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     {
         $count = count($this->runItems);
         if ($count === 0) {
-            array_slice($this->runItems, 0, null, true);
+            array_splice($this->runItems, 0, null, true);
         }
         if ($count < $this->maxSize && $this->cid > 0) {
             $cid = $this->cid;

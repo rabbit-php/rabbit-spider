@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
-use Rabbit\Base\Core\SplChannel;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Spider\Register\AbstractRegister;
 use Swoole\Coroutine;
@@ -16,10 +15,12 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     protected $channel;
     protected int $size = 1000;
-    protected int $maxSize = 20000;
+    protected int $maxSize = 1000;
     protected array $runItems = [];
     protected int $cid = 0;
     protected string $workerName;
+
+    protected int $retry = 5;
 
     public function init(): void
     {
@@ -27,8 +28,9 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
         [
             $this->tunnel,
             $this->size,
-            $this->maxSize
-        ] = ArrayHelper::getValueByArray($this->config, ['tunnel', 'size', 'maxSize'], [$this->tunnel, $this->size, $this->maxSize]);
+            $this->maxSize,
+            $this->retry
+        ] = ArrayHelper::getValueByArray($this->config, ['tunnel', 'size', 'maxSize', 'retry'], [$this->tunnel, $this->size, $this->size, $this->retry]);
         $this->channel = makeChannel($this->maxSize);
         $this->regist = getDI('register')->get($this->taskName);
         $this->regist->regist();
@@ -37,7 +39,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     public function check(): bool
     {
-        if (count($this->runItems) > $this->maxSize) {
+        if (count($this->runItems) >= $this->maxSize) {
             $this->cid = Coroutine::getCid();
             Coroutine::yield();
         }
@@ -46,7 +48,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     public function start(): void
     {
-        if (count($this->runItems) <= $this->maxSize && $this->cid > 0) {
+        if (count($this->runItems) < $this->maxSize && $this->cid > 0) {
             $cid = $this->cid;
             $this->cid = 0;
             Coroutine::resume($cid);

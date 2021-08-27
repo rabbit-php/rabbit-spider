@@ -54,7 +54,7 @@ abstract class AbstractSource
     public function release(string $host, IP $ip): bool
     {
         $key = "{$ip->ip}:{$ip->port}";
-        if ($ip->source >= 0 && ($ip->duration <= IP::IP_VCODE || $ip->duration > $ip->timeout * 1000)) {
+        if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
             if ($ip->duration === IP::IP_VCODE) {
                 $this->waits[$host][] = $ip->toArray();
             } else {

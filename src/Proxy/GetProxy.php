@@ -28,13 +28,19 @@ class GetProxy extends AbstractProxyPlugin
     protected ?string $classPrefix = null;
 
     protected array $proxy = [];
+
+    protected int $maxEmpty = 10;
     /**
      * @throws Throwable
      */
     public function init(): void
     {
         parent::init();
-        [$this->domains, $this->classPrefix, $proxy] = ArrayHelper::getValueByArray($this->config, ['domains', 'classPrefix', 'proxy']);
+        [
+            $this->domains,
+            $this->classPrefix,
+            $this->maxEmpty, $proxy
+        ] = ArrayHelper::getValueByArray($this->config, ['domains', 'classPrefix', 'maxEmpty', 'proxy'], ['maxEmpty' => $this->maxEmpty]);
         if ($this->domains === null || $this->classPrefix === null) {
             throw new InvalidArgumentException("domains or classPrefix is empty!");
         }
@@ -79,6 +85,7 @@ class GetProxy extends AbstractProxyPlugin
                     $realSleep = mt_rand(1, (int)ceil((int)$timeout / 3));
                     foreach ($domain->getTypes() as $type) {
                         $index = 1;
+                        $count = 0;
                         while (true) {
                             foreach ($domain->getUrls($index, $type) as $url) {
                                 $retry = 3;
@@ -128,7 +135,7 @@ class GetProxy extends AbstractProxyPlugin
                                         $tmp->data = array_filter($tmp->data);
                                         if (empty($tmp->data)) {
                                             App::warning("$model $url get empty");
-                                            if ($index >= $total) {
+                                            if (++$count >= $this->maxEmpty) {
                                                 break 3;
                                             }
                                         }

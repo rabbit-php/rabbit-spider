@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rabbit\Spider\Proxy\Domains;
+namespace Rabbit\Spider\Proxy;
 
 use Generator;
 use Symfony\Component\DomCrawler\Crawler;

@@ -25,7 +25,7 @@ class GetProxy extends AbstractProxyPlugin
 {
     protected ?array $domains = [];
 
-    protected string $classPrefix = 'Rabbit\Spider\Proxy\Domains';
+    protected ?string $classPrefix = null;
 
     protected array $proxy = [];
     /**
@@ -34,9 +34,9 @@ class GetProxy extends AbstractProxyPlugin
     public function init(): void
     {
         parent::init();
-        [$this->domains, $proxy] = ArrayHelper::getValueByArray($this->config, ['domains', 'proxy']);
-        if ($this->domains === null) {
-            throw new InvalidArgumentException("domains is empty!");
+        [$this->domains, $this->classPrefix, $proxy] = ArrayHelper::getValueByArray($this->config, ['domains', 'classPrefix', 'proxy']);
+        if ($this->domains === null || $this->classPrefix === null) {
+            throw new InvalidArgumentException("domains or classPrefix is empty!");
         }
         if ($proxy) {
             foreach (explode(',', $proxy) as $ip) {
@@ -81,64 +81,69 @@ class GetProxy extends AbstractProxyPlugin
                         $index = 1;
                         while (true) {
                             foreach ($domain->getUrls($index, $type) as $url) {
-                                try {
-                                    App::debug("$model get $index");
-                                    $options = [
-                                        'use_pool' => true,
-                                        'timeout' => $timeout * 5,
-                                        'iconv' => $domain->getEncoding() ?? false,
-                                        'headers' => [
-                                            'Upgrade-Insecure-Requests' => "1",
-                                            'Accept-Encoding' => null,
-                                            'DNT' => "1"
-                                        ]
-                                    ];
-                                    if ($useProxy > 0) {
-                                        $ip = $this->proxy[array_rand($this->proxy)];
-                                        if ($ip->proxy) {
-                                            $options['proxy'] = "tcp://{$ip->proxy}";
-                                            $options['pool_key'] = static function (Request $request) {
-                                                return Client::getKey($request->getConnectionTarget() + $request->getProxy());
-                                            };
-                                        }
-                                    }
-                                    $response = SaberGM::get($url, $options);
-                                    $body = $response->getBody()->getContents();
-                                    if (empty($body)) {
-                                        break 2;
-                                    }
-                                    $crawler = new Crawler($body);
-                                    $tmp = clone $msg;
-                                    $tmp->data = [];
-                                    $total = $domain->getPages($crawler);
-                                    if (null !== $selector = $domain->getSelector()) {
-                                        $table = $crawler->filterXPath($selector);
-                                        $table->each(function (Crawler $node) use ($domain, $tmp) {
-                                            if (!empty($data = $domain->buildData($node))) {
-                                                $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
-                                            }
-                                        });
-                                    } else {
-                                        foreach ($domain->buildData($crawler) as $data) {
-                                            if (!empty($data)) {
-                                                $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                                $retry = 3;
+                                while ($retry--) {
+                                    try {
+                                        App::debug("$model get $index");
+                                        $options = [
+                                            'use_pool' => true,
+                                            'timeout' => $timeout * 5,
+                                            'iconv' => $domain->getEncoding() ?? false,
+                                            'headers' => [
+                                                'DNT' => "1"
+                                            ]
+                                        ];
+                                        if ($useProxy > 0) {
+                                            $ip = $this->proxy[array_rand($this->proxy)];
+                                            if ($ip->proxy) {
+                                                $options['proxy'] = "tcp://{$ip->proxy}";
+                                                $options['pool_key'] = static function (Request $request) {
+                                                    return Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                                                };
                                             }
                                         }
-                                    }
-                                    $tmp->data = array_filter($tmp->data);
-                                    if (empty($tmp->data)) {
-                                        App::warning("$model page {$index} get empty");
-                                        if ($index >= $total) {
+                                        $response = SaberGM::get($url, $options);
+                                        $body = $response->getBody()->getContents();
+                                        if (empty($body)) {
                                             break 2;
                                         }
+                                        $crawler = new Crawler($body);
+                                        $tmp = clone $msg;
+                                        $tmp->data = [];
+                                        $total = $domain->getPages($crawler);
+                                        if (null !== $selector = $domain->getSelector()) {
+                                            $table = $crawler->filterXPath($selector);
+                                            $table->each(function (Crawler $node) use ($domain, $tmp) {
+                                                if (!empty($data = $domain->buildData($node))) {
+                                                    $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                                                }
+                                            });
+                                        } else {
+                                            foreach ($domain->buildData($crawler) as $data) {
+                                                if (!empty($data)) {
+                                                    $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
+                                                }
+                                            }
+                                        }
+                                        $tmp->data = array_filter($tmp->data);
+                                        if (empty($tmp->data)) {
+                                            App::warning("$model page {$index} get empty");
+                                            if ($index >= $total) {
+                                                break 2;
+                                            }
+                                        }
+                                        if (++$index >= $total) {
+                                            break 2;
+                                        }
+                                        usleep(1000);
+                                        $this->sink($tmp);
+                                        break;
+                                    } catch (Throwable $exception) {
+                                        usleep(1000);
                                     }
-                                    if (++$index >= $total) {
-                                        break 2;
-                                    }
-                                    usleep(200 * 1000);
-                                    $this->sink($tmp);
-                                } catch (Throwable $exception) {
-                                    App::warning("$model get error.msg=" . $exception->getMessage());
+                                }
+                                if ($retry === 0) {
+                                    App::warning("$model $url get error.msg=" . $exception->getMessage());
                                     break 3;
                                 }
                             }

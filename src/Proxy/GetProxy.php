@@ -127,7 +127,7 @@ class GetProxy extends AbstractProxyPlugin
                                         }
                                         $tmp->data = array_filter($tmp->data);
                                         if (empty($tmp->data)) {
-                                            App::warning("$model page {$index} get empty");
+                                            App::warning("$model $url get empty");
                                             if ($index >= $total) {
                                                 break 3;
                                             }

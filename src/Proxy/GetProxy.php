@@ -105,7 +105,7 @@ class GetProxy extends AbstractProxyPlugin
                                         $response = SaberGM::get($url, $options);
                                         $body = $response->getBody()->getContents();
                                         if (empty($body)) {
-                                            break 2;
+                                            break 3;
                                         }
                                         $crawler = new Crawler($body);
                                         $tmp = clone $msg;
@@ -129,11 +129,11 @@ class GetProxy extends AbstractProxyPlugin
                                         if (empty($tmp->data)) {
                                             App::warning("$model page {$index} get empty");
                                             if ($index >= $total) {
-                                                break 2;
+                                                break 3;
                                             }
                                         }
                                         if (++$index >= $total) {
-                                            break 2;
+                                            break 3;
                                         }
                                         usleep(1000);
                                         $this->sink($tmp);

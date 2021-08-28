@@ -73,7 +73,9 @@ abstract class AbstractSource
 
     public function run(): void
     {
-        $this->idle = array_slice($this->idle, 0, null, true);
+        if ($this->source >= 0) {
+            $this->idle = array_slice($this->idle, 0, null, true);
+        }
         foreach ($this->manager->getQueue() as $host => $queue) {
             foreach ($this->idle as $ip) {
                 for ($i = 0; $i < $ip->num; $i++) {

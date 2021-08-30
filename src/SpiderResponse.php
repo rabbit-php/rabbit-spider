@@ -50,7 +50,7 @@ class SpiderResponse
 
     public function getCrawler(): ?Crawler
     {
-        if ($this->code === self::CODE_VERCODE) {
+        if ($this->code <= 0) {
             return null;
         }
         try {

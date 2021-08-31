@@ -58,7 +58,7 @@ class SpiderResponse
                 return $this->crawler;
             }
             $this->crawler = new Crawler();
-            $this->crawler->addDocument($this->response->domObject());
+            $this->crawler->addHtmlContent((string)$this->response->getBody());
             return $this->crawler;
         } catch (Throwable $e) {
             $this->code = self::CODE_EMPTY;

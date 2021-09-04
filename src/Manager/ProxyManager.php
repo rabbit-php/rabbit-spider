@@ -120,6 +120,6 @@ final class ProxyManager
                 usleep(300 * 1000);
             }
         }
-        return throw $e;
+        throw $e;
     }
 }

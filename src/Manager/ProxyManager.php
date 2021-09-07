@@ -10,6 +10,7 @@ use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\Expression;
 use Rabbit\Spider\Source\IP;
+use RuntimeException;
 use Throwable;
 
 final class ProxyManager
@@ -120,6 +121,6 @@ final class ProxyManager
                 usleep(300 * 1000);
             }
         }
-        throw $e;
+        throw new RuntimeException("get $url error!");
     }
 }

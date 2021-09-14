@@ -16,6 +16,8 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     protected $channel;
     protected int $size = 1000;
     protected int $maxSize = 1000;
+    protected int $percent = 90;
+    private int $minSize = 0;
     protected array $runItems = [];
     protected int $cid = 0;
     protected string $workerName;
@@ -30,7 +32,8 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
             $this->size,
             $this->maxSize,
             $this->retry
-        ] = ArrayHelper::getValueByArray($this->config, ['tunnel', 'size', 'maxSize', 'retry'], [$this->tunnel, $this->size, $this->size, $this->retry]);
+        ] = ArrayHelper::getValueByArray($this->config, ['tunnel', 'size', 'maxSize', 'retry', 'percent'], [$this->tunnel, $this->size, $this->maxSize, $this->retry, $this->percent]);
+        $this->minSize = (int)ceil($this->maxSize * $this->percent / 100);
         $this->channel = makeChannel($this->maxSize);
         $this->regist = getDI('register')->get($this->taskName);
         $this->regist->regist();
@@ -54,7 +57,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     public function start(): void
     {
-        if (count($this->runItems) < $this->maxSize && $this->cid > 0) {
+        if (count($this->runItems) < $this->minSize && $this->cid > 0) {
             $cid = $this->cid;
             $this->cid = 0;
             Coroutine::resume($cid);

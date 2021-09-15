@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rabbit\Spider\Manager;
 
 use Rabbit\Base\Core\SplChannel;
+use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Spider\SpiderResponse;
 use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Helper\ArrayHelper;
@@ -106,7 +107,7 @@ final class ProxyManager
     public function proxy(string $url, string $name = 'local', array $headers = [], int $retry = 5): SpiderResponse
     {
         if (!($this->sources[$name] ?? false)) {
-            return null;
+            throw new InvalidConfigException("$name source not exist!");
         }
         $ctrl = $this->sources[$name];
         $ctrl->setManager($this);
@@ -116,7 +117,7 @@ final class ProxyManager
             try {
                 $ip = clone $idle[array_rand($idle)];
                 $ip->release = false;
-                return $ip->proxy($url);
+                return $ip->proxy($url, $headers);
             } catch (Throwable $e) {
                 usleep(300 * 1000);
             }

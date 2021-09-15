@@ -87,12 +87,10 @@ class CheckProxy extends AbstractProxyPlugin
                     } else {
                         $item['duration'] = IP::IP_FAILED;
                     }
-                    $response = null;
                 }
             });
             $tmp->opt['table'] = $url;
             $this->sink($tmp);
-            $tmp = null;
         });
     }
 }

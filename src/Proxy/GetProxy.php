@@ -142,17 +142,18 @@ class GetProxy extends AbstractProxyPlugin
                                         if (++$index >= $total) {
                                             break 3;
                                         }
-                                        usleep(1000);
                                         $this->sink($tmp);
-                                        break;
+                                        continue 2;
                                     } catch (Throwable $exception) {
-                                        usleep(1000);
+                                    } finally {
+                                        $response = null;
+                                        $crawler = null;
+                                        $tmp = null;
+                                        sleep($realSleep);
                                     }
                                 }
-                                if ($retry === 0) {
-                                    App::warning("$model $url get error.msg=" . $exception->getMessage());
-                                    break 3;
-                                }
+                                App::warning("$model $url get error.msg=" . $exception->getMessage());
+                                break 3;
                             }
                         }
                     };

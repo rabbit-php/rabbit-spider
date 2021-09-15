@@ -58,7 +58,7 @@ class CheckProxy extends AbstractProxyPlugin
             $data = $msg->data;
             $tmp = clone $msg;
             $tmp->data = $data;
-            unset($data);
+            $data = null;
             wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout) {
                 $proxy = "{$item['ip']}:{$item['port']}";
                 $response = new SpiderResponse();
@@ -87,10 +87,12 @@ class CheckProxy extends AbstractProxyPlugin
                     } else {
                         $item['duration'] = IP::IP_FAILED;
                     }
+                    $response = null;
                 }
             });
             $tmp->opt['table'] = $url;
             $this->sink($tmp);
+            $tmp = null;
         });
     }
 }

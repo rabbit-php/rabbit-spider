@@ -72,7 +72,7 @@ final class ProxyManager
         return $this->queue[$host]->dequeue();
     }
 
-    public function save(string $domain, array &$items): void
+    public function save(string $domain, array $items): void
     {
         $domain = parse_url($domain, PHP_URL_HOST);
         if (!ArrayHelper::isIndexed($items)) {

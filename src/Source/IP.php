@@ -84,15 +84,18 @@ class IP extends Model implements ArrayAble
         return get_object_vars($this);
     }
 
-    public function proxy(string $url, array $options = []): SpiderResponse
+    public function proxy(string $url, array $options = [], int $retry = 1): SpiderResponse
     {
         $contents = $this->request($url, $options);
-        if ($contents->code === SpiderResponse::CODE_EMPTY) {
-            throw new EmptyException("No body with response");
-        } elseif (!$contents->isOK) {
-            throw new BadRequestHttpException("got error! code={$contents->code}");
+        while ($retry--) {
+            if ($contents->code === SpiderResponse::CODE_EMPTY) {
+                continue;
+            } elseif (!$contents->isOK) {
+                throw new BadRequestHttpException("got error! code={$contents->code}");
+            }
+            return $contents;
         }
-        return $contents;
+        throw new EmptyException("No body with response");
     }
 
     private function request(string $url, array $headers = []): SpiderResponse

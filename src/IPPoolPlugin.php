@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
+use Rabbit\Base\Core\Channel;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Spider\Register\AbstractRegister;
 use Swoole\Coroutine;
@@ -13,7 +14,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     protected ?string $tunnel = null;
     protected AbstractRegister $regist;
 
-    protected $channel;
+    protected Channel $channel;
     protected int $size = 1000;
     protected int $maxSize = 1000;
     protected int $percent = 90;
@@ -40,7 +41,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
             [$this->tunnel, $this->size, $this->maxSize, $this->busySize, $this->retry, $this->percent]
         );
         $this->busySize === 0 && $this->busySize = (int)ceil($this->maxSize * $this->percent / 100);
-        $this->channel = makeChannel($this->maxSize);
+        $this->channel = new Channel($this->maxSize);
         $this->regist = getDI('register')->get($this->taskName);
         $this->regist->regist();
         $this->workerName = $this->regist->getMsg();

@@ -28,6 +28,7 @@ class IP extends Model implements ArrayAble
     public int $source = -1;
     public int $timeout = 10;
     public ?int $duration = 1;
+    public int $wait = 100 * 1000;
 
     protected ?AbstractSource $ctrl = null;
     protected array $hosts = [];
@@ -86,9 +87,11 @@ class IP extends Model implements ArrayAble
 
     public function proxy(string $url, array $options = [], int $retry = 1): SpiderResponse
     {
-        $contents = $this->request($url, $options);
         while ($retry--) {
+            $contents = $this->request($url, $options);
             if ($contents->code === SpiderResponse::CODE_EMPTY) {
+                $contents = null;
+                usleep($this->wait);
                 continue;
             } elseif (!$contents->isOK) {
                 throw new BadRequestHttpException("got error! code={$contents->code}");

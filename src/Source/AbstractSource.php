@@ -22,7 +22,6 @@ abstract class AbstractSource
 
     protected array $idle = [];
     protected array $delIPs = [];
-    protected array $waits = [];
 
     protected ?ProxyManager $manager = null;
 
@@ -55,11 +54,7 @@ abstract class AbstractSource
     {
         $key = "{$ip->ip}:{$ip->port}";
         if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
-            if ($ip->duration === IP::IP_VCODE) {
-                $this->waits[$host][] = $ip->toArray();
-            } else {
-                $this->delIPs[] = $ip->toArray();
-            }
+            $this->delIPs[] = $ip->toArray();
             unset($this->idle[$key]);
             if (count($this->idle) === 0) {
                 $this->idle = [];

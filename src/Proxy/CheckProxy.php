@@ -82,7 +82,7 @@ class CheckProxy extends AbstractProxyPlugin
                     $this->manager->verification($url, $response);
                     if ($response->code === SpiderResponse::CODE_VERCODE) {
                         $item['duration'] = IP::IP_VCODE;
-                    } elseif (null !== $response->getResponse()) {
+                    } elseif ($response->isOK && $response->code > 0) {
                         $item['duration'] = $response->getResponse()->getDuration();
                     } else {
                         $item['duration'] = IP::IP_FAILED;

@@ -126,8 +126,8 @@ class IP extends Model implements ArrayAble
             $this->ctrl->getManager()->verification($url, $response);
             if ($response->code === SpiderResponse::CODE_VERCODE) {
                 $this->duration = self::IP_VCODE;
-            } elseif ($response->isOK && $this->duration > 0 && (null !== $res = $response->getResponse())) {
-                $this->duration = $res->getDuration();
+            } elseif ($response->isOK && $response->code > 0) {
+                $this->duration = $response->getResponse()->getDuration();
             } else {
                 $this->duration = self::IP_FAILED;
             }

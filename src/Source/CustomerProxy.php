@@ -61,7 +61,7 @@ class CustomerProxy extends AbstractSource
             $res[$key] ??= null;
         }
         $key = "{$res['ip']}:{$res['port']}";
-        if (!($this->idle[$key]) ?? false) {
+        if (!($this->idle[$key] ?? false)) {
             $this->idle[$key] = new IP($res, $this);
         }
     }

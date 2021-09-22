@@ -6,6 +6,7 @@ namespace Rabbit\Spider;
 
 use Rabbit\HttpClient\Response;
 use Rabbit\Spider\Exception\FailedException;
+use Rabbit\Web\SwooleStream;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 
@@ -59,6 +60,7 @@ class SpiderResponse
             }
             $this->crawler = new Crawler();
             $this->crawler->addHtmlContent((string)$this->response->getBody());
+            $this->response->withBody(new SwooleStream());
             return $this->crawler;
         } catch (Throwable $e) {
             $this->code = self::CODE_EMPTY;

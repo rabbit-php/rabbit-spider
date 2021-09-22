@@ -48,7 +48,7 @@ class IP extends Model implements ArrayAble
             'use_pool' => true,
             "target" => false,
             "iconv" => false,
-            "redirect" => 5,
+            "redirect" => 0,
             'timeout'  => $this->timeout,
             'headers'  => [
                 'DNT' => "1",

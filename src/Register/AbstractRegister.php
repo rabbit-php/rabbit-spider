@@ -36,14 +36,18 @@ abstract class AbstractRegister
         while (true) {
             $servers = $this->getServers();
             ksort($servers);
+            $del = [];
             foreach ($servers as $name => $time) {
                 if ($name === $this->msg) {
                     $index = $num;
                 }
                 if (time() < (int)$time + $this->interval) {
                     $num++;
+                } else {
+                    $del[] = $name;
                 }
             }
+            $del && $this->delServers($del);
             if (isset($index) && $num > 0) {
                 break;
             }
@@ -54,4 +58,5 @@ abstract class AbstractRegister
 
     abstract public function regist(): void;
     abstract public function getServers(): array;
+    abstract public function delServers(array $servers): void;
 }

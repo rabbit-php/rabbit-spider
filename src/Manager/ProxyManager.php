@@ -88,11 +88,8 @@ final class ProxyManager
                 }
             } else {
                 $onlyUpdate = true;
-                if ($data['duration'] === IP::IP_FAILED) {
+                if ($data['duration'] <= IP::IP_VCODE) {
                     $data['score'] = new Expression('score-1');
-                } elseif ($data['duration'] === IP::IP_VCODE) {
-                    $data['domain'] = $domain;
-                    $data['score'] = 100;
                 } else {
                     $data['score'] = 100;
                 }

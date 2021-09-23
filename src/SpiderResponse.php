@@ -29,6 +29,13 @@ class SpiderResponse
         $this->setResponse($response);
     }
 
+    public function __destruct()
+    {
+        if (libxml_use_internal_errors(true) === true) {
+            libxml_clear_errors();
+        }
+    }
+
     public function getResponse(): ?Response
     {
         return $this->response;

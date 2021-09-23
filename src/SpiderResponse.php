@@ -32,7 +32,6 @@ class SpiderResponse
     public function __destruct()
     {
         libxml_clear_errors();
-        libxml_use_internal_errors(true);
     }
 
     public function getResponse(): ?Response
@@ -64,8 +63,7 @@ class SpiderResponse
             if ($this->crawler !== null) {
                 return $this->crawler;
             }
-            $this->crawler = new Crawler();
-            $this->crawler->addDocument($this->response->domObject());
+            $this->crawler = new Crawler($this->response->getBody()->getContents());
             $this->response->withBody(new SwooleStream());
             return $this->crawler;
         } catch (Throwable $e) {

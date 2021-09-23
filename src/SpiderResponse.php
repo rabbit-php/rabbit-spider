@@ -32,7 +32,6 @@ class SpiderResponse
     public function __destruct()
     {
         libxml_clear_errors();
-        libxml_use_internal_errors(false);
         libxml_use_internal_errors(true);
     }
 

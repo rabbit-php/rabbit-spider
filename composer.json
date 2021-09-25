@@ -15,15 +15,15 @@
     "rabbit/data-pipeline": "dev-master",
     "rabbit/httpclient": "dev-master",
     "symfony/dom-crawler": "^5.0",
-    "masterminds/html5": "^2.7",
-    "symfony/css-selector": "^5.3"
+    "masterminds/html5": "^2.7"
   },
   "require-dev": {
     "swoole/ide-helper": "@dev",
     "phpunit/phpunit": "*"
   },
   "suggest": {
-    "ext-v8js": "Help to run js"
+    "ext-v8js": "Help to run js",
+    "symfony/css-selector": "Support filter"
   },
   "autoload": {
     "psr-4": {

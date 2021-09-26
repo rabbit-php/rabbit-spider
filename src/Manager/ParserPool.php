@@ -24,7 +24,7 @@ class ParserPool
         $this->channel = new SplChannel();
     }
 
-    public function get(string &$html): DOMDocument
+    public function get(string $html): DOMDocument
     {
         if (!$this->channel->isEmpty() || $this->current >= $this->size) {
             $dom = $this->channel->dequeue();

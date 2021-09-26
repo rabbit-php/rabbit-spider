@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
-use DOMDocument;
 use Rabbit\HttpClient\Response;
 use Rabbit\Spider\Exception\FailedException;
-use Rabbit\Spider\Manager\ParserPool;
 use Rabbit\Web\SwooleStream;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;

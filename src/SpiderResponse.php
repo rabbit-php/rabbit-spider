@@ -18,8 +18,6 @@ class SpiderResponse
 
     private ?Crawler $crawler = null;
 
-    public ?DOMDocument $dom = null;
-
     public int $code = 0;
 
     public bool $isOK = false;
@@ -36,7 +34,6 @@ class SpiderResponse
     public function __destruct()
     {
         libxml_clear_errors();
-        $this->dom && ParserPool::instance()->release($this->dom);
     }
 
     public function getResponse(): ?Response
@@ -69,8 +66,7 @@ class SpiderResponse
                 return $this->crawler;
             }
             $this->crawler = new Crawler();
-            $this->dom = ParserPool::instance()->get($this->response->getBody()->getContents());
-            $this->crawler->addDocument($this->dom);
+            $this->crawler->addDocument($this->response->domObject());
             $this->response->withBody(new SwooleStream());
             return $this->crawler;
         } catch (Throwable $e) {

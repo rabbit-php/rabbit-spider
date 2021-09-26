@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider;
 
+use DOMDocument;
 use Rabbit\HttpClient\Response;
 use Rabbit\Spider\Exception\FailedException;
+use Rabbit\Spider\Manager\ParserPool;
 use Rabbit\Web\SwooleStream;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
@@ -15,6 +17,8 @@ class SpiderResponse
     private ?Response $response = null;
 
     private ?Crawler $crawler = null;
+
+    public ?DOMDocument $dom = null;
 
     public int $code = 0;
 
@@ -32,6 +36,7 @@ class SpiderResponse
     public function __destruct()
     {
         libxml_clear_errors();
+        $this->dom && ParserPool::instance()->release($this->dom);
     }
 
     public function getResponse(): ?Response
@@ -64,7 +69,8 @@ class SpiderResponse
                 return $this->crawler;
             }
             $this->crawler = new Crawler();
-            $this->crawler->addDocument($this->response->domObject());
+            $this->dom = ParserPool::instance()->get($this->response->getBody()->getContents());
+            $this->crawler->addDocument($this->dom);
             $this->response->withBody(new SwooleStream());
             return $this->crawler;
         } catch (Throwable $e) {

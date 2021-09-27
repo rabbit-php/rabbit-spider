@@ -48,7 +48,7 @@ class IP extends Model implements ArrayAble
             'use_pool' => true,
             "target" => false,
             "iconv" => false,
-            "redirect" => 5,
+            "redirect" => 0,
             'timeout'  => $this->timeout,
             'headers'  => [
                 'DNT' => "1",
@@ -101,18 +101,17 @@ class IP extends Model implements ArrayAble
         throw new EmptyException("No body with response");
     }
 
-    private function request(string $url, array $headers = []): SpiderResponse
+    private function request(string $url, array $options = []): SpiderResponse
     {
         $response = new SpiderResponse();
         $key = null;
         try {
-            $options = [
+            $options = array_merge($options, [
                 'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
-                },
-                'headers' => $headers
-            ];
+                }
+            ]);
             if (!empty($this->proxy)) {
                 $options['proxy'] = [
                     'http' => "tcp://{$this->proxy}",

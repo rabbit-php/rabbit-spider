@@ -101,7 +101,7 @@ final class ProxyManager
         }
     }
 
-    public function proxy(string $url, string $name = 'local', array $headers = [], int $retry = 5): SpiderResponse
+    public function proxy(string $url, string $name = 'local', array $options = [], int $retry = 5): SpiderResponse
     {
         if (!($this->sources[$name] ?? false)) {
             throw new InvalidConfigException("$name source not exist!");
@@ -114,7 +114,7 @@ final class ProxyManager
             try {
                 $ip = clone $idle[array_rand($idle)];
                 $ip->release = false;
-                return $ip->proxy($url, $headers);
+                return $ip->proxy($url, $options);
             } catch (Throwable $e) {
                 usleep(300 * 1000);
             }

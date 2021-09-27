@@ -89,7 +89,7 @@ class IP extends Model implements ArrayAble
     {
         while ($retry--) {
             $contents = $this->request($url, $options);
-            if ($contents->code === SpiderResponse::CODE_EMPTY) {
+            if ($contents->code === SpiderResponse::CODE_EMPTY && $retry > 0) {
                 $contents = null;
                 usleep($this->wait);
                 continue;

@@ -50,7 +50,9 @@ class SpiderResponse
             if ($response->getBody()->getSize() === 0) {
                 $this->code = self::CODE_EMPTY;
             }
-            $this->isOK = true;
+            if (2 === ($this->code / 100) % 10) {
+                $this->isOK = true;
+            }
         }
     }
 

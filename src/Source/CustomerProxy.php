@@ -27,18 +27,20 @@ class CustomerProxy extends AbstractSource
 
     public function loadIP(): void
     {
-        if (!$this->start) {
-            $this->start = true;
-            foreach ($this->ips as $ip) {
-                $this->buildProxy($ip);
-            }
-            if ($this->service !== null) {
-                foreach ($this->service->getProxys() as $ip) {
+        sync("proxy.customer", function () {
+            if (!$this->start) {
+                $this->start = true;
+                foreach ($this->ips as $ip) {
                     $this->buildProxy($ip);
                 }
+                if ($this->service !== null) {
+                    foreach ($this->service->getProxys() as $ip) {
+                        $this->buildProxy($ip);
+                    }
+                }
+                $this->run();
             }
-            $this->run();
-        }
+        });
     }
 
     private function buildProxy(string $ip): void

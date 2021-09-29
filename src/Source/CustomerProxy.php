@@ -33,7 +33,7 @@ class CustomerProxy extends AbstractSource
                 $this->buildProxy($ip);
             }
             if ($this->service !== null) {
-                foreach ($this->service as $ip) {
+                foreach ($this->service->getProxys() as $ip) {
                     $this->buildProxy($ip);
                 }
             }

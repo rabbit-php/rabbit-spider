@@ -11,7 +11,6 @@ use Rabbit\Spider\Stores\IProxyStore;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\Expression;
 use Rabbit\Spider\Source\IP;
-use RuntimeException;
 use Throwable;
 
 final class ProxyManager
@@ -23,6 +22,8 @@ final class ProxyManager
     private array $checkCode = [];
 
     protected array $queue = [];
+
+    protected array $localQueue = [];
 
     public int $timeout = 10;
 
@@ -52,22 +53,32 @@ final class ProxyManager
         return $this->queue;
     }
 
-    public function getIP(string $host): IP
+    public function getLocalQueue(): array
+    {
+        return $this->localQueue;
+    }
+
+    public function getIP(string $host, bool $local = false): IP
     {
         if (!$this->running) {
             $this->running = true;
             foreach ($this->sources as $source) {
                 $source->setManager($this);
                 loop(function () use ($source) {
-                    $source->loadIP();
+                    sync("proxy.loadpool", fn () => $source->loadIP());
                 }, $source->getLoopTime() * 1000);
             }
         }
         if (!($this->queue[$host] ?? false)) {
             $this->queue[$host] = new SplChannel();
+            $this->localQueue[$host] = new SplChannel();
             foreach ($this->sources as $source) {
+                sync("proxy.loadpool", fn () => $source->loadIP());
                 $source->run();
             }
+        }
+        if ($local) {
+            return $this->localQueue[$host]->dequeue();
         }
         return $this->queue[$host]->dequeue();
     }
@@ -131,7 +142,7 @@ final class ProxyManager
         }
         $ctrl = $this->sources[$name];
         $ctrl->setManager($this);
-        $ctrl->loadIP(true);
+        sync("proxy.loadip", fn () => $ctrl->loadIP(true));
         return $ctrl->getIdle();
     }
 }

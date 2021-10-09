@@ -56,9 +56,6 @@ abstract class AbstractSource
         if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
             $this->delIPs[] = $ip->toArray();
             unset($this->idle[$key]);
-            if (count($this->idle) === 0) {
-                $this->idle = [];
-            }
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {
             $this->manager->getQueue()[$host]->enqueue($ip);
@@ -68,9 +65,6 @@ abstract class AbstractSource
 
     public function run(): void
     {
-        if ($this->source >= 0) {
-            $this->idle = array_slice($this->idle, 0, null, true);
-        }
         foreach ($this->manager->getQueue() as $host => $queue) {
             foreach ($this->idle as $ip) {
                 for ($i = 0; $i < $ip->num; $i++) {

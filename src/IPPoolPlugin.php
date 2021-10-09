@@ -49,13 +49,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
 
     public function check(): bool
     {
-        if (0 === $count = count($this->runItems)) {
-            $this->runItems = [];
-        } else {
-            $this->runItems = array_slice($this->runItems, 0, null, true);
-        }
-
-        if ($count >= $this->maxSize) {
+        if (count($this->runItems) >= $this->maxSize) {
             $this->cid = Coroutine::getCid();
             Coroutine::yield();
         }

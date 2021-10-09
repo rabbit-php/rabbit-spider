@@ -62,18 +62,18 @@ final class ProxyManager
     {
         if (!$this->running) {
             $this->running = true;
-            foreach ($this->sources as $source) {
+            foreach ($this->sources as $name => $source) {
                 $source->setManager($this);
-                loop(function () use ($source) {
-                    sync("proxy.loadpool", fn () => $source->loadIP());
+                loop(function () use ($source, $name) {
+                    sync("proxy.{$name}", fn () => $source->loadIP());
                 }, $source->getLoopTime() * 1000);
             }
         }
         if (!($this->queue[$host] ?? false)) {
             $this->queue[$host] = new SplChannel();
             $this->localQueue[$host] = new SplChannel();
-            foreach ($this->sources as $source) {
-                sync("proxy.loadpool", fn () => $source->loadIP());
+            foreach ($this->sources as $name => $source) {
+                sync("proxy.{$name}", fn () => $source->loadIP());
                 $source->run();
             }
         }
@@ -142,7 +142,7 @@ final class ProxyManager
         }
         $ctrl = $this->sources[$name];
         $ctrl->setManager($this);
-        sync("proxy.loadip", fn () => $ctrl->loadIP(true));
+        sync("proxy.{$name}", fn () => $ctrl->loadIP(true));
         return $ctrl->getIdle();
     }
 }

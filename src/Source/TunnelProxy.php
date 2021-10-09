@@ -48,20 +48,6 @@ class TunnelProxy extends AbstractSource
         $this->run();
     }
 
-    public function run(): void
-    {
-        foreach ($this->manager->getQueue() as $host => $queue) {
-            foreach ($this->idle as $ip) {
-                for ($i = 0; $i < $ip->num; $i++) {
-                    if ($ip->addHost($host)) {
-                        $queue->enqueue($ip);
-                        $this->manager->getLocalQueue()[$host]?->enqueue($ip);
-                    }
-                }
-            }
-        }
-    }
-
     public function flush(): void
     {
         throw new NotSupportedException("flush no need update ip");

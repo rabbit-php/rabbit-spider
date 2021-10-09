@@ -66,10 +66,19 @@ abstract class AbstractSource
     public function run(): void
     {
         foreach ($this->manager->getQueue() as $host => $queue) {
+            $ips = [];
             foreach ($this->idle as $ip) {
-                for ($i = 0; $i < $ip->num; $i++) {
-                    if ($ip->addHost($host)) {
-                        $queue->enqueue($ip);
+                if ($ip->addHost($host)) {
+                    $ips[] = [$ip, $ip->num];
+                }
+            }
+            while ($ips) {
+                foreach ($ips as $i => &$item) {
+                    $queue->enqueue($item[0]);
+                    $item[0]->source < 0 && $this->manager->getLocalQueue()[$host]?->enqueue($item[0]);
+                    $item[1]--;
+                    if ($item[1] === 0) {
+                        unset($ips[$i]);
                     }
                 }
             }

@@ -110,11 +110,12 @@ class GetProxy extends AbstractProxyPlugin
                                             }
                                         }
                                         $response = SaberGM::get($url, $options);
-                                        $body = $response->getBody()->getContents();
-                                        if (empty($body)) {
+                                        if ($response->getBody()->getSize() === 0) {
                                             break 3;
                                         }
-                                        $crawler = new Crawler($body);
+                                        $crawler = new Crawler();
+                                        $crawler->addDocument($response->getParsedDomObject());
+                                        libxml_clear_errors();
                                         $tmp = clone $msg;
                                         $tmp->data = [];
                                         $total = $domain->getPages($crawler);

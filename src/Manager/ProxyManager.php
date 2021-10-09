@@ -101,6 +101,14 @@ final class ProxyManager
         }
     }
 
+    public function getIPByName(string $name = 'local'): IP
+    {
+        $idle = $this->getProxyIdle($name);
+        $ip = clone $idle[array_rand($idle)];
+        $ip->release = false;
+        return $ip;
+    }
+
     public function proxy(string $url, string $name = 'local', array $options = [], int $retry = 5): SpiderResponse
     {
         $idle = $this->getProxyIdle($name);

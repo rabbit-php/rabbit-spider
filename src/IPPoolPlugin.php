@@ -23,6 +23,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     protected int $cid = 0;
     protected string $workerName;
     protected bool $useLocal = false;
+    protected int $wait = 0;
 
     protected int $retry = 5;
 
@@ -37,10 +38,11 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
             $this->retry,
             $this->percent,
             $this->useLocal,
+            $this->wait,
         ] = ArrayHelper::getValueByArray(
             $this->config,
-            ['tunnel', 'size', 'maxSize', 'busySize', 'retry', 'percent', 'useLocal'],
-            [$this->tunnel, $this->size, $this->maxSize, $this->busySize, $this->retry, $this->percent, $this->useLocal]
+            ['tunnel', 'size', 'maxSize', 'busySize', 'retry', 'percent', 'useLocal', 'wait'],
+            [$this->tunnel, $this->size, $this->maxSize, $this->busySize, $this->retry, $this->percent, $this->useLocal, $this->wait]
         );
         $this->busySize === 0 && $this->busySize = (int)ceil($this->maxSize * $this->percent / 100);
         $this->channel = new Channel($this->maxSize);

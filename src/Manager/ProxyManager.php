@@ -26,6 +26,7 @@ final class ProxyManager
     protected array $localQueue = [];
 
     public int $timeout = 10;
+    protected int $wait = 0;
 
     private array $sources = [];
     private bool $running = false;
@@ -58,7 +59,7 @@ final class ProxyManager
         return $this->localQueue;
     }
 
-    public function getIP(string $host, bool $local = false): IP
+    public function getIP(string $host, bool $local = false, int $wait = 0): IP
     {
         if (!$this->running) {
             $this->running = true;
@@ -77,10 +78,9 @@ final class ProxyManager
                 $source->run();
             }
         }
-        if ($local) {
-            return $this->localQueue[$host]->dequeue();
-        }
-        return $this->queue[$host]->dequeue();
+        $wait === 0 && $wait = $this->wait;
+        $wait > 0 && usleep($this->wait * 1000);
+        return $local ? $this->localQueue[$host]->dequeue() : $this->queue[$host]->dequeue();
     }
 
     public function save(string $domain, array $items): void

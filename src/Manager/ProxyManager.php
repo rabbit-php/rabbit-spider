@@ -80,7 +80,17 @@ final class ProxyManager
         }
         $wait === 0 && $wait = $this->wait;
         $wait > 0 && usleep($this->wait * 1000);
-        return $local ? $this->localQueue[$host]->dequeue() : $this->queue[$host]->dequeue();
+
+        if ($local) {
+            $ip = $this->localQueue[$host]->dequeue();
+            if ($ip->isLocal === false) {
+                $ip = clone $ip;
+                $ip->isLocal = true;
+            }
+        } else {
+            $ip = $this->queue[$host]->dequeue();
+        }
+        return $ip;
     }
 
     public function save(string $domain, array $items): void

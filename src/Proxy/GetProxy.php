@@ -135,14 +135,15 @@ class GetProxy extends AbstractProxyPlugin
                                         }
                                         $tmp->data = array_filter($tmp->data);
                                         if (empty($tmp->data)) {
-                                            App::warning("$model $url get empty");
                                             if (++$count >= $this->maxEmpty) {
+                                                App::warning("$model $url get empty");
                                                 break 3;
                                             }
                                         }
                                         if (++$index >= $total) {
                                             break 3;
                                         }
+                                        $count = 0;
                                         $this->sink($tmp);
                                         continue 2;
                                     } catch (Throwable $exception) {

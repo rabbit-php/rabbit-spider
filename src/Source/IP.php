@@ -55,7 +55,7 @@ class IP extends Model implements ArrayAble
                 'DNT' => "1",
                 'Accept' => '*/*',
             ]
-        ]);
+        ], session: true);
     }
 
     public function rules(): array

@@ -46,7 +46,7 @@ class IP extends Model implements ArrayAble
         $this->validate();
 
         $this->client = new Client([
-            'use_pool' => true,
+            'use_pool' => $this->num,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,

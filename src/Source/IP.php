@@ -136,7 +136,7 @@ class IP extends Model implements ArrayAble
             }
             $host = parse_url($url, PHP_URL_HOST);
             if ($this->release && $this->ctrl->release($host, $this)) {
-                $key && Client::release($key);
+                $key && $this->source < 0 && Client::release($key);
             }
             return $response;
         }

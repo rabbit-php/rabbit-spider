@@ -48,7 +48,7 @@ class IP extends Model implements ArrayAble
         $this->ciphers = explode(':', 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES');
 
         $this->client = new Client([
-            'use_pool' => $this->num,
+            'use_pool' => true,
             "target" => true,
             "iconv" => false,
             "redirect" => 0,

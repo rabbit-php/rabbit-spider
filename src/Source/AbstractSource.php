@@ -58,8 +58,7 @@ abstract class AbstractSource
             unset($this->idle[$key]);
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {
-            $this->manager->getQueue()[$host]->enqueue($ip);
-            $ip->isLocal && $this->manager->getLocalQueue()[$host]?->enqueue($ip);
+            $ip->isLocal ? $this->manager->getLocalQueue()[$host]?->enqueue($ip) : $this->manager->getQueue()[$host]->enqueue($ip);
         }
         return false;
     }

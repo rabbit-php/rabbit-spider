@@ -22,6 +22,7 @@ class CheckProxy extends AbstractProxyPlugin
     protected ?array $checkList;
     protected ?int $sleep;
     protected Client $client;
+    protected array $ciphers = [];
 
     public function init(): void
     {
@@ -33,6 +34,7 @@ class CheckProxy extends AbstractProxyPlugin
         if (empty($this->checkList)) {
             throw new InvalidConfigException("checkList empty");
         }
+        $this->ciphers = explode(':', 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES');
         $this->client = new Client([
             'use_pool' => false,
             'target' => true,
@@ -62,6 +64,7 @@ class CheckProxy extends AbstractProxyPlugin
             wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout) {
                 $proxy = "{$item['ip']}:{$item['port']}";
                 $response = new SpiderResponse();
+                shuffle($this->ciphers);
                 try {
                     $response->setResponse($this->client->get($url, [
                         "proxy"   => [
@@ -75,6 +78,7 @@ class CheckProxy extends AbstractProxyPlugin
                             'Host' => parse_url($url, PHP_URL_HOST),
                             'DNT' => "1",
                         ],
+                        'ssl_ciphers' => implode(':', $this->ciphers) . ':!aNULL:!eNULL:!MD5'
                     ]));
                 } catch (Throwable $exception) {
                     $response->code = $exception->getCode();

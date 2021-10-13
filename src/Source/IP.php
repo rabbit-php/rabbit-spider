@@ -117,7 +117,7 @@ class IP extends Model implements ArrayAble
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
                 },
-                'ssl_ciphers' => implode(':', $this->ciphers)
+                'ssl_ciphers' => implode(':', $ciphers)
             ]);
             if (!empty($this->proxy)) {
                 $options['proxy'] = [

@@ -8,6 +8,7 @@ use Rabbit\Base\Contract\ArrayAble;
 use Rabbit\HttpClient\Client;
 use Rabbit\HttpServer\Exceptions\BadRequestHttpException;
 use Rabbit\Model\Model;
+use Rabbit\Spider\Agents\UserAgent;
 use Rabbit\Spider\Exception\EmptyException;
 use Rabbit\Spider\SpiderResponse;
 use Swlib\Saber\Request;
@@ -117,7 +118,11 @@ class IP extends Model implements ArrayAble
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
                 },
-                'ssl_ciphers' => implode(':', $ciphers)
+                'ssl_ciphers' => implode(':', $ciphers),
+                'useragent' => UserAgent::random([
+                    'os_type' => 'Windows',
+                    'device_type' => 'Desktop'
+                ])
             ]);
             if (!empty($this->proxy)) {
                 $options['proxy'] = [

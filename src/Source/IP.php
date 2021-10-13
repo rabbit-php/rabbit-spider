@@ -112,6 +112,7 @@ class IP extends Model implements ArrayAble
         $response = new SpiderResponse();
         $key = null;
         try {
+            shuffle($this->ciphers);
             $options = array_merge($options, [
                 'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());

@@ -34,7 +34,7 @@ class CheckProxy extends AbstractProxyPlugin
         if (empty($this->checkList)) {
             throw new InvalidConfigException("checkList empty");
         }
-        $this->ciphers = explode(':', 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES');
+        $this->ciphers = $this->manager->getCiphers();
         $this->client = new Client([
             'use_pool' => false,
             'target' => true,

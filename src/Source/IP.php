@@ -33,7 +33,6 @@ class IP extends Model implements ArrayAble
 
     protected ?AbstractSource $ctrl = null;
     protected array $hosts = [];
-    protected array $ciphers = [];
 
     const IP_VCODE = 0;
     const IP_FAILED = -1;
@@ -45,7 +44,6 @@ class IP extends Model implements ArrayAble
         parent::__construct($columns);
         $this->ctrl = $ctrl;
         $this->validate();
-        $this->ciphers = explode(':', 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES');
 
         $this->client = new Client([
             'use_pool' => true,
@@ -111,14 +109,15 @@ class IP extends Model implements ArrayAble
     {
         $response = new SpiderResponse();
         $key = null;
+        $ciphers = $this->ctrl->getManager()->getCiphers();
         try {
-            shuffle($this->ciphers);
+            shuffle($ciphers);
             $options = array_merge($options, [
                 'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
                 },
-                'ssl_ciphers' => implode(':', $this->ciphers) . ':!aNULL:!eNULL:!MD5'
+                'ssl_ciphers' => implode(':', $this->ciphers)
             ]);
             if (!empty($this->proxy)) {
                 $options['proxy'] = [

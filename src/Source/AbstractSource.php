@@ -58,7 +58,8 @@ abstract class AbstractSource
             unset($this->idle[$key]);
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {
-            $ip->source >= 0 ? $this->manager->getQueue()[$host]->enqueue($ip) : $this->manager->getLocalQueue()[$host]?->enqueue($ip);
+            $this->manager->getQueue()[$host]->enqueue($ip);
+            $ip->source < 0 && $this->manager->getLocalQueue()[$host]?->enqueue($ip);
         }
         return false;
     }
@@ -74,7 +75,8 @@ abstract class AbstractSource
             }
             while ($ips) {
                 foreach ($ips as $i => &$item) {
-                    $item[0]->source >= 0 ? $queue->enqueue($item[0]) : $this->manager->getLocalQueue()[$host]?->enqueue($item[0]);
+                    $queue->enqueue($item[0]);
+                    $item[0]->source < 0 && $this->manager->getLocalQueue()[$host]?->enqueue($item[0]);
                     $item[1]--;
                     if ($item[1] === 0) {
                         unset($ips[$i]);

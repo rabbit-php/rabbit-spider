@@ -83,7 +83,7 @@ class CheckProxy extends AbstractProxyPlugin
                             'os_type' => 'Windows',
                             'device_type' => 'Desktop'
                         ]),
-                        'ssl_ciphers' => implode(':', $ciphers)
+                        'ssl_ciphers' => implode(':', $ciphers) . (time() % 2 === 0 ? ':!DSS' : '')
                     ]));
                 } catch (Throwable $exception) {
                     $response->code = $exception->getCode();

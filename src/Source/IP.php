@@ -111,14 +111,13 @@ class IP extends Model implements ArrayAble
         $response = new SpiderResponse();
         $key = null;
         $ciphers = $this->ctrl->getManager()->getCiphers();
-        $ciphers = array_slice($ciphers, 0, array_rand($ciphers, 1)) + ["ECDH+AESGCM"];
         shuffle($ciphers);
         try {
             $options = array_merge($options, [
                 'pool_key' => function (Request $request) use (&$key, $ciphers) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     if (count($request->cookies->raw) === 0) {
-                        $request->withSSLCiphers(implode(':', $ciphers) . '!aNULL:!eNULL:!LOW:!ADH:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS');
+                        $request->withSSLCiphers(implode(':', $ciphers));
                     }
                     return $key;
                 },

@@ -33,42 +33,11 @@ final class ProxyManager
 
     protected array $ciphers = [];
 
-    private array $tmp = [
-        'DHE-RSA-AES256-SHA',
-        'DHE-DSS-AES256-SHA',
-        'AES256-SHA:KRB5-DES-CBC3-MD5',
-        'KRB5-DES-CBC3-SHA',
-        'EDH-RSA-DES-CBC3-SHA',
-        'EDH-DSS-DES-CBC3-SHA',
-        'DES-CBC3-SHA:DES-CBC3-MD5',
-        'DHE-RSA-AES128-SHA',
-        'DHE-DSS-AES128-SHA',
-        'AES128-SHA:RC2-CBC-MD5',
-        'KRB5-RC4-MD5:KRB5-RC4-SHA',
-        'RC4-SHA:RC4-MD5:RC4-MD5',
-        'KRB5-DES-CBC-MD5',
-        'KRB5-DES-CBC-SHA',
-        'EDH-RSA-DES-CBC-SHA',
-        'EDH-DSS-DES-CBC-SHA:DES-CBC-SHA',
-        'DES-CBC-MD5:EXP-KRB5-RC2-CBC-MD5',
-        'EXP-KRB5-DES-CBC-MD5',
-        'EXP-KRB5-RC2-CBC-SHA',
-        'EXP-KRB5-DES-CBC-SHA',
-        'EXP-EDH-RSA-DES-CBC-SHA',
-        'EXP-EDH-DSS-DES-CBC-SHA',
-        'EXP-DES-CBC-SHA',
-        'EXP-RC2-CBC-MD5',
-        'EXP-RC2-CBC-MD5',
-        'EXP-KRB5-RC4-MD5',
-        'EXP-KRB5-RC4-SHA',
-        'EXP-RC4-MD5:EXP-RC4-MD5'
-    ];
-
     public function __construct(IProxyStore $store, array $sources = null)
     {
         $this->store = $store;
         $this->sources = $sources ?? $this->sources;
-        $this->ciphers = explode(':', 'ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:RSA+AES128');
+        $this->ciphers = explode(':', 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS');
     }
 
     public function verification(string $url, SpiderResponse $response): void
@@ -80,7 +49,7 @@ final class ProxyManager
 
     public function getCiphers(): array
     {
-        return [...array_slice($this->tmp, 0, rand(1, count($this->tmp) - 1)), ...$this->ciphers];
+        return $this->ciphers;
     }
 
     public function getStore(): IProxyStore

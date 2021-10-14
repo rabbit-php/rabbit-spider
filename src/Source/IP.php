@@ -111,14 +111,16 @@ class IP extends Model implements ArrayAble
         $response = new SpiderResponse();
         $key = null;
         $ciphers = $this->ctrl->getManager()->getCiphers();
+        $tmp = array_slice($ciphers, 0, (int)(count($ciphers) / 2));
+        $tmp[] = "ECDH+AESGCM";
+        shuffle($tmp);
         try {
-            shuffle($ciphers);
             $options = array_merge($options, [
                 'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     return $key;
                 },
-                'ssl_ciphers' => implode(':', $ciphers),
+                'ssl_ciphers' => implode(':', $tmp),
                 'useragent' => UserAgent::random([
                     'os_type' => 'Windows',
                     'device_type' => 'Desktop'
@@ -144,7 +146,7 @@ class IP extends Model implements ArrayAble
             }
             $host = parse_url($url, PHP_URL_HOST);
             if ($this->release && $this->ctrl->release($host, $this)) {
-                $key && $this->source < 0 && Client::release($key);
+                $key && $this->source >= 0 && Client::release($key);
             }
             return $response;
         }

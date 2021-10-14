@@ -31,7 +31,9 @@ final class ProxyManager
     private array $sources = [];
     private bool $running = false;
 
-    protected array $ciphers = [
+    protected array $ciphers = [];
+
+    private array $tmp = [
         'DHE-RSA-AES256-SHA',
         'DHE-DSS-AES256-SHA',
         'AES256-SHA:KRB5-DES-CBC3-MD5',
@@ -66,6 +68,7 @@ final class ProxyManager
     {
         $this->store = $store;
         $this->sources = $sources ?? $this->sources;
+        $this->ciphers = explode(':', 'ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:RSA+AES128');
     }
 
     public function verification(string $url, SpiderResponse $response): void
@@ -77,7 +80,7 @@ final class ProxyManager
 
     public function getCiphers(): array
     {
-        return $this->ciphers;
+        return [...array_slice($this->tmp, 0, rand(1, count($this->tmp) - 1)), ...$this->ciphers];
     }
 
     public function getStore(): IProxyStore

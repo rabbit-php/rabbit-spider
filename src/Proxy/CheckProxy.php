@@ -10,6 +10,7 @@ use Rabbit\Data\Pipeline\Message;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Spider\AbstractProxyPlugin;
+use Rabbit\Spider\Agents\UserAgent;
 use Rabbit\Spider\Source\IP;
 use Rabbit\Spider\SpiderResponse;
 
@@ -64,9 +65,8 @@ class CheckProxy extends AbstractProxyPlugin
             wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout) {
                 $proxy = "{$item['ip']}:{$item['port']}";
                 $response = new SpiderResponse();
-                $tmp = array_slice($this->ciphers, 0, (int)(count($this->ciphers) / 2));
-                $tmp[] = "ECDH+AESGCM";
-                shuffle($tmp);
+                $ciphers = array_slice($this->ciphers, 0, array_rand($this->ciphers, 1));
+                shuffle($ciphers);
                 try {
                     $response->setResponse($this->client->get($url, [
                         "proxy"   => [
@@ -80,7 +80,12 @@ class CheckProxy extends AbstractProxyPlugin
                             'Host' => parse_url($url, PHP_URL_HOST),
                             'DNT' => "1",
                         ],
-                        'ssl_ciphers' => implode(':', $tmp)
+                        'useragent' => UserAgent::random([
+                            'agent_type' => 'Browser',
+                            'os_type' => 'Windows',
+                            'device_type' => 'Desktop'
+                        ]),
+                        'ssl_ciphers' => implode(':', $ciphers) . ":!aNULL:!eNULL:!LOW:!ADH:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS"
                     ]));
                 } catch (Throwable $exception) {
                     $response->code = $exception->getCode();

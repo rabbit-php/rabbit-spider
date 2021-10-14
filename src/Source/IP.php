@@ -48,7 +48,7 @@ class IP extends Model implements ArrayAble
 
         $this->client = new Client([
             'use_pool' => true,
-            "target" => true,
+            "target" => false,
             "iconv" => false,
             "redirect" => 0,
             'timeout'  => $this->timeout,
@@ -111,17 +111,19 @@ class IP extends Model implements ArrayAble
         $response = new SpiderResponse();
         $key = null;
         $ciphers = $this->ctrl->getManager()->getCiphers();
-        $tmp = array_slice($ciphers, 0, (int)(count($ciphers) / 2));
-        $tmp[] = "ECDH+AESGCM";
-        shuffle($tmp);
+        $ciphers = array_slice($ciphers, 0, array_rand($ciphers, 1)) + ["ECDH+AESGCM"];
+        shuffle($ciphers);
         try {
             $options = array_merge($options, [
-                'pool_key' => function (Request $request) use (&$key) {
+                'pool_key' => function (Request $request) use (&$key, $ciphers) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                    if (count($request->cookies->raw) === 0) {
+                        $request->withSSLCiphers(implode(':', $ciphers) . '!aNULL:!eNULL:!LOW:!ADH:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS');
+                    }
                     return $key;
                 },
-                'ssl_ciphers' => implode(':', $tmp),
                 'useragent' => UserAgent::random([
+                    'agent_type' => 'Browser',
                     'os_type' => 'Windows',
                     'device_type' => 'Desktop'
                 ])

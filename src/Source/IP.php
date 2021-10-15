@@ -109,7 +109,7 @@ class IP extends Model implements ArrayAble
                 'pool_key' => function (Request $request) use (&$key, $ciphers) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
                     if (count($request->cookies->raw) === 0) {
-                        $request->withSSLCiphers(implode(':', $ciphers) . (time() % 2 === 0 ? ':!DSS' : ''));
+                        $request->withSSLCiphers(implode(':', $ciphers));
                     }
                     return $key;
                 },

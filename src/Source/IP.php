@@ -89,24 +89,16 @@ class IP extends Model implements ArrayAble
 
     public function proxy(string $url, array $options = [], int $retry = 1): SpiderResponse
     {
-        while ($retry--) {
-            $contents = $this->request($url, $options);
-            if ($contents->code === SpiderResponse::CODE_EMPTY) {
-                $contents = null;
-                if ($retry === 0) {
-                    break;
-                }
-                usleep($this->wait);
-                continue;
-            } elseif (!$contents->isOK) {
-                throw new BadRequestHttpException("got error! code={$contents->code}");
-            }
-            return $contents;
+        $contents = $this->request($url, $options);
+        if ($contents->code === SpiderResponse::CODE_EMPTY) {
+            throw new EmptyException("No body with response");
+        } elseif (!$contents->isOK) {
+            throw new BadRequestHttpException("got error! code={$contents->code}");
         }
-        throw new EmptyException("No body with response");
+        return $contents;
     }
 
-    private function request(string $url, array $options = []): SpiderResponse
+    private function request(string $url, array $options = [], int $retry = 1): SpiderResponse
     {
         $response = new SpiderResponse();
         $key = null;

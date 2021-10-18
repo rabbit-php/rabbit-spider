@@ -53,7 +53,7 @@ abstract class AbstractSource
     public function release(string $host, IP $ip): bool
     {
         $key = "{$ip->ip}:{$ip->port}";
-        if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
+        if ($ip->source >= 0 && $ip->duration < IP::IP_VCODE) {
             $this->delIPs[] = $ip->toArray();
             unset($this->idle[$key]);
             return true;

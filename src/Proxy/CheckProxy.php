@@ -36,9 +36,8 @@ class CheckProxy extends AbstractProxyPlugin
         }
         $this->client = new Client([
             'use_pool' => false,
-            'target' => true,
-            "iconv" => false,
-            "redirect" => 0,
+            'target' => false,
+            "redirect" => 5,
         ]);
     }
 

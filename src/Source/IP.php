@@ -49,8 +49,7 @@ class IP extends Model implements ArrayAble
         $this->client = new Client([
             'use_pool' => true,
             "target" => false,
-            "iconv" => false,
-            "redirect" => 0,
+            "redirect" => 5,
             'timeout'  => $this->timeout,
             'headers'  => [
                 'DNT' => "1",

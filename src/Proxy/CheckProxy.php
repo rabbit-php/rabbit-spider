@@ -63,8 +63,6 @@ class CheckProxy extends AbstractProxyPlugin
             wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout) {
                 $proxy = "{$item['ip']}:{$item['port']}";
                 $response = new SpiderResponse();
-                $ciphers = $this->manager->getCiphers();
-                shuffle($ciphers);
                 try {
                     $response->setResponse($this->client->get($url, [
                         "proxy"   => [
@@ -82,8 +80,7 @@ class CheckProxy extends AbstractProxyPlugin
                             'agent_type' => 'Browser',
                             'os_type' => 'Windows',
                             'device_type' => 'Desktop'
-                        ]),
-                        'ssl_ciphers' => implode(':', $ciphers)
+                        ])
                     ]));
                 } catch (Throwable $exception) {
                     $response->code = $exception->getCode();

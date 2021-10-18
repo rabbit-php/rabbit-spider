@@ -102,15 +102,10 @@ class IP extends Model implements ArrayAble
     {
         $response = new SpiderResponse();
         $key = null;
-        $ciphers = $this->ctrl->getManager()->getCiphers();
-        shuffle($ciphers);
         try {
             $options = array_merge($options, [
-                'pool_key' => function (Request $request) use (&$key, $ciphers) {
+                'pool_key' => function (Request $request) use (&$key) {
                     $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
-                    if (count($request->cookies->raw) === 0) {
-                        $request->withSSLCiphers(implode(':', $ciphers));
-                    }
                     return $key;
                 },
                 'useragent' => UserAgent::random([

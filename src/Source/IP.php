@@ -109,7 +109,8 @@ class IP extends Model implements ArrayAble
                 },
                 'useragent' => UserAgent::random([
                     'agent_type' => 'Browser',
-                    'os_type' => 'Windows',
+                    'agent_name' => ['Firefox', 'Chrome', 'Internet Explorer', 'Safari'],
+                    'os_type' => ['Windows', 'OS X'],
                     'device_type' => 'Desktop'
                 ])
             ]);

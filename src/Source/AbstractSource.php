@@ -76,7 +76,6 @@ abstract class AbstractSource
             }
             while ($ips) {
                 foreach ($ips as $i => &$item) {
-                    $item[0]->getPoolCount($host, 1);
                     $queue->enqueue($item[0]);
                     $item[0]->source < 0 && $this->manager->getLocalQueue()[$host]?->enqueue($item[0]);
                     $item[1]--;

@@ -74,11 +74,17 @@ class IP extends Model implements ArrayAble
 
     public function addHost(string $host): bool
     {
-        if (in_array($host, $this->hosts)) {
+        if ($this->hosts[$host] ?? false) {
             return false;
         }
-        $this->hosts[] = $host;
+        $this->hosts[$host] = 0;
         return true;
+    }
+
+    public function getPoolCount(string $host, int $add = 0): int
+    {
+        $this->hosts[$host] += $add;
+        return $this->hosts[$host];
     }
 
     public function toArray(): array
@@ -88,55 +94,51 @@ class IP extends Model implements ArrayAble
 
     public function proxy(string $url, array $options = [], int $retry = 1): SpiderResponse
     {
-        $contents = $this->request($url, $options);
-        if ($contents->code === SpiderResponse::CODE_EMPTY) {
-            throw new EmptyException("No body with response");
-        } elseif (!$contents->isOK) {
-            throw new BadRequestHttpException("got error! code={$contents->code}");
-        }
-        return $contents;
-    }
-
-    private function request(string $url, array $options = [], int $retry = 1): SpiderResponse
-    {
         $response = new SpiderResponse();
         $key = null;
-        try {
-            $options = array_merge($options, [
-                'pool_key' => function (Request $request) use (&$key) {
-                    $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
-                    return $key;
-                },
-                'useragent' => UserAgent::random([
-                    'agent_type' => 'Browser',
-                    'agent_name' => ['Firefox', 'Chrome', 'Internet Explorer', 'Safari'],
-                    'os_type' => ['Windows', 'OS X'],
-                    'device_type' => 'Desktop'
-                ])
-            ]);
-            if (!empty($this->proxy)) {
-                $options['proxy'] = [
-                    'http' => "tcp://{$this->proxy}",
-                    'https' => "tcp://{$this->proxy}",
-                ];
-            }
-            $response->setResponse($this->client->get($url, $options));
-        } catch (Throwable $e) {
-            $response->code = $e->getCode();
-        } finally {
-            $this->ctrl->getManager()->verification($url, $response);
-            if ($response->code === SpiderResponse::CODE_VERCODE) {
-                $this->duration = self::IP_VCODE;
-            } elseif ($response->isOK && $response->code > 0) {
-                $this->duration = $response->getResponse()->getDuration();
-            } else {
-                $this->duration = self::IP_FAILED;
-            }
-            $host = parse_url($url, PHP_URL_HOST);
-            if ($this->release && $this->ctrl->release($host, $this)) {
-                $key && $this->source >= 0 && Client::release($key);
-            }
-            return $response;
+        $options = array_merge($options, [
+            'pool_key' => function (Request $request) use (&$key) {
+                $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                return $key;
+            },
+            'useragent' => UserAgent::random([
+                'agent_type' => 'Browser',
+                'agent_name' => ['Firefox', 'Chrome', 'Internet Explorer', 'Safari'],
+                'os_type' => ['Windows', 'OS X'],
+                'device_type' => 'Desktop'
+            ])
+        ]);
+        if (!empty($this->proxy)) {
+            $options['proxy'] = [
+                'http' => "tcp://{$this->proxy}",
+                'https' => "tcp://{$this->proxy}",
+            ];
         }
+        while ($retry--) {
+            try {
+                $response->setResponse($this->client->get($url, $options));
+                break;
+            } catch (Throwable $e) {
+                $response->code = $e->getCode();
+            }
+        }
+        $this->ctrl->getManager()->verification($url, $response);
+        if ($response->code === SpiderResponse::CODE_VERCODE) {
+            $this->duration = self::IP_VCODE;
+        } elseif ($response->isOK && $response->code > 0) {
+            $this->duration = $response->getResponse()->getDuration();
+        } else {
+            $this->duration = self::IP_FAILED;
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($this->release && $this->ctrl->release($host, $this)) {
+            $key && $this->source >= 0 && Client::release($key);
+        }
+        if ($response->code === SpiderResponse::CODE_EMPTY) {
+            throw new EmptyException("No body with response");
+        } elseif (!$response->isOK) {
+            throw new BadRequestHttpException("got error! code={$response->code}");
+        }
+        return $response;
     }
 }

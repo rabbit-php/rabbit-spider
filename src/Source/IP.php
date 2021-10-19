@@ -81,10 +81,18 @@ class IP extends Model implements ArrayAble
         return true;
     }
 
-    public function getPoolCount(string $host, int $add = 0): int
+    public function check(string $host): int
     {
-        $this->hosts[$host] += $add;
-        return $this->hosts[$host];
+        if ($this->duration > self::IP_VCODE) {
+            $num = $this->hosts[$host];
+            $this->hosts[$host] = 0;
+            return $num + 1;
+        }
+        $this->hosts[$host]++;
+        if ($this->hosts[$host] === 1) {
+            return 1;
+        }
+        return 0;
     }
 
     public function toArray(): array

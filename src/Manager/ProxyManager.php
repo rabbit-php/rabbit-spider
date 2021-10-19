@@ -98,7 +98,6 @@ final class ProxyManager
         } else {
             $ip = $this->queue[$host]->dequeue();
         }
-        $ip->getPoolCount($host, -1);
         return $ip;
     }
 

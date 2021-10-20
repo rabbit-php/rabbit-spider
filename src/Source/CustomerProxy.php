@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Rabbit\Spider\Source;
 
-use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
 
 class CustomerProxy extends AbstractSource
 {
     protected array $ips = [];
-
-    protected bool $start = false;
 
     protected int $checktime = 120 * 1000;
 
@@ -27,15 +24,12 @@ class CustomerProxy extends AbstractSource
 
     public function loadIP(): void
     {
-        if (!$this->start) {
-            $this->start = true;
-            foreach ($this->ips as $ip) {
+        foreach ($this->ips as $ip) {
+            $this->buildProxy($ip);
+        }
+        if ($this->service !== null) {
+            foreach ($this->service->getProxys() as $ip) {
                 $this->buildProxy($ip);
-            }
-            if ($this->service !== null) {
-                foreach ($this->service->getProxys() as $ip) {
-                    $this->buildProxy($ip);
-                }
             }
         }
         $this->run();
@@ -64,10 +58,5 @@ class CustomerProxy extends AbstractSource
         if (!($this->idle[$key] ?? false)) {
             $this->idle[$key] = new IP($res, $this);
         }
-    }
-
-    public function flush(): void
-    {
-        throw new NotSupportedException("flush no need update ip");
     }
 }

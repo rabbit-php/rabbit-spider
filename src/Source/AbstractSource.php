@@ -53,18 +53,12 @@ abstract class AbstractSource
     public function release(string $host, IP $ip): bool
     {
         $key = "{$ip->ip}:{$ip->port}";
-        if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
+        if ($ip->duration <= IP::IP_VCODE) {
             $this->delIPs[] = $ip->toArray();
             unset($this->idle[$key]);
             return true;
         } elseif ($ip->release && ($this->idle[$key] ?? false)) {
-            if ($ip->isLocal) {
-                for ($i = 0; $i < $ip->check($host); $i++) {
-                    $this->manager->getLocalQueue()[$host]?->enqueue($ip);
-                }
-            } else {
-                $this->manager->getQueue()[$host]?->enqueue($ip);
-            }
+            $ip->isLocal === false ? $this->manager->getQueue()[$host]?->enqueue($ip) : $this->manager->getLocalQueue()[$host]?->enqueue($ip);
         }
         return false;
     }
@@ -91,6 +85,10 @@ abstract class AbstractSource
         }
     }
 
+    protected function flush(): void
+    {
+        $this->delIPs = [];
+    }
+
     abstract public function loadIP(): void;
-    abstract protected function flush(): void;
 }

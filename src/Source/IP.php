@@ -77,27 +77,15 @@ class IP extends Model implements ArrayAble
         if ($this->hosts[$host] ?? false) {
             return false;
         }
-        $this->hosts[$host] = 0;
+        $this->hosts[$host] = '';
         return true;
-    }
-
-    public function check(string $host): int
-    {
-        if ($this->duration > self::IP_VCODE) {
-            $num = $this->hosts[$host];
-            $this->hosts[$host] = 0;
-            return $num + 1;
-        }
-        $this->hosts[$host]++;
-        if ($this->hosts[$host] === 1) {
-            return 1;
-        }
-        return 0;
     }
 
     public function autoRelease(string $host): void
     {
-        $this->ctrl->release($host, $this);
+        if ($this->ctrl->release($host, $this)) {
+            !empty($this->hosts[$host] ?? false) && Client::release($this->hosts[$host]);
+        }
     }
 
     public function toArray(): array
@@ -108,11 +96,13 @@ class IP extends Model implements ArrayAble
     public function proxy(string $url, array $options = [], int $retry = 1, bool $release = true): SpiderResponse
     {
         $response = new SpiderResponse();
-        $key = null;
+        $host = parse_url($url, PHP_URL_HOST);
         $options = array_merge($options, [
-            'pool_key' => function (Request $request) use (&$key) {
-                $key = Client::getKey($request->getConnectionTarget() + $request->getProxy());
-                return $key;
+            'pool_key' => function (Request $request) use ($host) {
+                if (empty($this->hosts[$host] ?? false)) {
+                    $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
+                }
+                return $this->hosts[$host];
             },
             'useragent' => UserAgent::random([
                 'agent_type' => 'Browser',
@@ -143,10 +133,7 @@ class IP extends Model implements ArrayAble
         } else {
             $this->duration = self::IP_FAILED;
         }
-        $host = parse_url($url, PHP_URL_HOST);
-        if ($this->release && $release && $this->ctrl->release($host, $this)) {
-            $key && $this->source >= 0 && Client::release($key);
-        }
+        $this->release && $release && $this->autoRelease($host);
         if ($response->code === SpiderResponse::CODE_EMPTY) {
             throw new EmptyException("No body with response");
         } elseif (!$response->isOK) {

@@ -20,6 +20,7 @@ class TunnelProxy extends AbstractSource
 
     public function loadIP(bool $auto = false): void
     {
+        $this->flush();
         $res = [];
         $parsed_url = parse_url($this->ip);
         $res['ip'] = isset($parsed_url['host']) ? $parsed_url['host'] : null;

@@ -24,6 +24,7 @@ class CustomerProxy extends AbstractSource
 
     public function loadIP(): void
     {
+        $this->flush();
         foreach ($this->ips as $ip) {
             $this->buildProxy($ip);
         }

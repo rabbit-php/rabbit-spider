@@ -95,6 +95,12 @@ class IP extends Model implements ArrayAble
         return 0;
     }
 
+    public function autoRelease(string $host): void
+    {
+        $this->release = true;
+        $this->ctrl->release($host, $this);
+    }
+
     public function toArray(): array
     {
         return get_object_vars($this);

@@ -97,7 +97,6 @@ class IP extends Model implements ArrayAble
 
     public function autoRelease(string $host): void
     {
-        $this->release = true;
         $this->ctrl->release($host, $this);
     }
 
@@ -106,7 +105,7 @@ class IP extends Model implements ArrayAble
         return get_object_vars($this);
     }
 
-    public function proxy(string $url, array $options = [], int $retry = 1): SpiderResponse
+    public function proxy(string $url, array $options = [], int $retry = 1, bool $release = true): SpiderResponse
     {
         $response = new SpiderResponse();
         $key = null;
@@ -145,7 +144,7 @@ class IP extends Model implements ArrayAble
             $this->duration = self::IP_FAILED;
         }
         $host = parse_url($url, PHP_URL_HOST);
-        if ($this->release && $this->ctrl->release($host, $this)) {
+        if ($this->release && $release && $this->ctrl->release($host, $this)) {
             $key && $this->source >= 0 && Client::release($key);
         }
         if ($response->code === SpiderResponse::CODE_EMPTY) {

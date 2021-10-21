@@ -86,8 +86,8 @@ final class ProxyManager
                 $source->run();
             }
         }
-        $wait === 0 && $wait = $this->wait;
-        $wait > 0 && usleep($this->wait * 1000);
+        // $wait === 0 && $wait = $this->wait;
+        // $wait > 0 && usleep($this->wait * 1000);
 
         if ($local) {
             $ip = $this->localQueue[$host]->dequeue();

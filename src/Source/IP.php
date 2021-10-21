@@ -31,6 +31,7 @@ class IP extends Model implements ArrayAble
     public ?int $duration = 1;
     public int $wait = 100 * 1000;
     public bool $isLocal = false;
+    public bool $remove = false;
 
     protected ?AbstractSource $ctrl = null;
     protected array $hosts = [];

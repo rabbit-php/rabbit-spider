@@ -54,10 +54,11 @@ abstract class AbstractSource
     {
         $key = "{$ip->ip}:{$ip->port}";
         if ($ip->duration <= IP::IP_VCODE) {
+            $ip->remove = true;
             $this->delIPs[] = $ip->toArray();
             unset($this->idle[$key]);
             return true;
-        } elseif ($ip->release && ($this->idle[$key] ?? false)) {
+        } elseif ($ip->release && !$ip->remove) {
             $ip->isLocal === false ? $this->manager->getQueue()[$host]?->enqueue($ip) : $this->manager->getLocalQueue()[$host]?->enqueue($ip);
         }
         return false;

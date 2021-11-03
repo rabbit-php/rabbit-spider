@@ -52,15 +52,17 @@ abstract class AbstractSource
 
     public function release(string $host, IP $ip): bool
     {
-        $key = "{$ip->ip}:{$ip->port}";
-        if ($ip->duration <= IP::IP_VCODE) {
+        if ($ip->isLocal) {
+            $this->manager->getLocalQueue()[$host]?->enqueue($ip);
+            return false;
+        }
+        if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
             $ip->remove = true;
             $this->delIPs[] = $ip->toArray();
-            unset($this->idle[$key]);
+            unset($this->idle["{$ip->ip}:{$ip->port}"]);
             return true;
-        } elseif ($ip->release && !$ip->remove) {
-            $ip->isLocal === false ? $this->manager->getQueue()[$host]?->enqueue($ip) : $this->manager->getLocalQueue()[$host]?->enqueue($ip);
         }
+        $ip->release && !$ip->remove && $this->manager->getQueue()[$host]?->enqueue($ip);
         return false;
     }
 

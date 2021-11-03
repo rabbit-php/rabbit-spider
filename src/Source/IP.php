@@ -78,14 +78,14 @@ class IP extends Model implements ArrayAble
         if ($this->hosts[$host] ?? false) {
             return false;
         }
-        $this->hosts[$host] = '';
+        $this->hosts[$host] = $host;
         return true;
     }
 
     public function autoRelease(string $host): void
     {
         if ($this->ctrl->release($host, $this)) {
-            !empty($this->hosts[$host] ?? false) && Client::release($this->hosts[$host]);
+            !empty($this->hosts[$host] ?? false) && $this->hosts[$host] !== $host && Client::release($this->hosts[$host]);
         }
     }
 
@@ -100,10 +100,7 @@ class IP extends Model implements ArrayAble
         $host = parse_url($url, PHP_URL_HOST);
         $options = array_merge($options, [
             'pool_key' => function (Request $request) use ($host) {
-                if (empty($this->hosts[$host] ?? false)) {
-                    $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
-                }
-                return $this->hosts[$host];
+                return $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
             },
             'useragent' => UserAgent::random([
                 'agent_type' => 'Browser',

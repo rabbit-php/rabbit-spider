@@ -120,6 +120,7 @@ class IP extends Model implements ArrayAble
                 $response->setResponse($this->client->get($url, $options));
                 break;
             } catch (Throwable $e) {
+                $response->msg = $e->getMessage();
                 $response->code = $e->getCode();
             }
         }
@@ -133,9 +134,9 @@ class IP extends Model implements ArrayAble
         }
         $this->release && $release && $this->autoRelease($host);
         if ($response->code === SpiderResponse::CODE_EMPTY) {
-            throw new EmptyException("No body with response");
+            throw new EmptyException($response->msg ?? "No body with response");
         } elseif (!$response->isOK) {
-            throw new BadRequestHttpException("got error! code={$response->code}");
+            throw new BadRequestHttpException($response->msg ?? "got error! code={$response->code}");
         }
         return $response;
     }

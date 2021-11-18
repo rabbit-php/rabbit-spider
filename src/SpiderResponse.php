@@ -18,11 +18,13 @@ class SpiderResponse
 
     public int $code = 0;
 
+    public ?string $msg = null;
+
     public bool $isOK = false;
 
-    const CODE_VERCODE = -1;
-    const CODE_EMPTY = -2;
-    const CODE_FAILED = 0;
+    const CODE_VERCODE = -4;
+    const CODE_EMPTY = -5;
+    const CODE_FAILED = -6;
 
     public function __construct(Response $response = null)
     {
@@ -70,6 +72,7 @@ class SpiderResponse
             $this->response->withBody(new SwooleStream());
             return $this->crawler;
         } catch (Throwable $e) {
+            $this->msg = $e->getMessage();
             $this->code = self::CODE_EMPTY;
             return null;
         }

@@ -68,13 +68,8 @@ class CheckProxy extends AbstractProxyPlugin
                             "http"  => "tcp://$proxy",
                             "https" => "tcp://$proxy",
                         ],
+                        'redirect' => 0,
                         'timeout' => $timeout,
-                        'headers' => [
-                            'Referer' => $url,
-                            'Upgrade-Insecure-Requests' => "1",
-                            'Host' => parse_url($url, PHP_URL_HOST),
-                            'DNT' => "1",
-                        ],
                         'useragent' => UserAgent::random([
                             'agent_type' => 'Browser',
                             'os_type' => 'Windows',
@@ -84,7 +79,6 @@ class CheckProxy extends AbstractProxyPlugin
                 } catch (Throwable $exception) {
                     $response->code = $exception->getCode();
                 } finally {
-                    $this->manager->verification($url, $response);
                     if ($response->code === SpiderResponse::CODE_VERCODE) {
                         $item['duration'] = IP::IP_VCODE;
                     } elseif ($response->isOK && $response->code > 0) {

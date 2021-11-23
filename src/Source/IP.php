@@ -134,9 +134,9 @@ class IP extends Model implements ArrayAble
         }
         $this->release && $release && $this->autoRelease($host);
         if ($response->code === SpiderResponse::CODE_EMPTY) {
-            throw new EmptyException($response->msg ?? "No body with response");
+            throw new EmptyException($response->msg ?? "No body with response", $response->code);
         } elseif (!$response->isOK) {
-            throw new BadRequestHttpException($response->msg ?? "got error! code={$response->code}");
+            throw new BadRequestHttpException($response->msg ?? "got error! code={$response->code}", $response->code);
         }
         return $response;
     }

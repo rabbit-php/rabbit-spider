@@ -49,6 +49,7 @@ class IP extends Model implements ArrayAble
 
         $this->client = new Client([
             'use_pool' => true,
+            'iconv' => false,
             "target" => false,
             "redirect" => 0,
             'timeout'  => $this->timeout,
@@ -98,7 +99,7 @@ class IP extends Model implements ArrayAble
     {
         $response = new SpiderResponse();
         $host = parse_url($url, PHP_URL_HOST);
-        $options = array_merge($options, [
+        $options = array_merge([
             'pool_key' => function (Request $request) use ($host) {
                 return $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
             },
@@ -108,7 +109,7 @@ class IP extends Model implements ArrayAble
                 'os_type' => ['Windows', 'OS X'],
                 'device_type' => 'Desktop'
             ])
-        ]);
+        ], $options);
         if (!empty($this->proxy)) {
             $options['proxy'] = [
                 'http' => "tcp://{$this->proxy}",

@@ -94,6 +94,7 @@ class GetProxy extends AbstractProxyPlugin
                                         App::debug("$model get $index");
                                         $options = [
                                             'use_pool' => true,
+                                            'iconv' => false,
                                             'timeout' => $timeout * 5,
                                             'iconv' => $domain->getEncoding() ?? false,
                                             'headers' => [

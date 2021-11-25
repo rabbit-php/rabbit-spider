@@ -68,6 +68,7 @@ class CheckProxy extends AbstractProxyPlugin
                             "http"  => "tcp://$proxy",
                             "https" => "tcp://$proxy",
                         ],
+                        'iconv' => false,
                         'redirect' => 0,
                         'timeout' => $timeout,
                         'useragent' => UserAgent::random([

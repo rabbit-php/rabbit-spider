@@ -99,7 +99,7 @@ class IP extends Model implements ArrayAble
     {
         $response = new SpiderResponse();
         $host = parse_url($url, PHP_URL_HOST);
-        $options = array_merge([
+        $options = [
             'pool_key' => function (Request $request) use ($host) {
                 return $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
             },
@@ -108,8 +108,9 @@ class IP extends Model implements ArrayAble
                 'agent_name' => ['Firefox', 'Chrome', 'Internet Explorer', 'Safari'],
                 'os_type' => ['Windows', 'OS X'],
                 'device_type' => 'Desktop'
-            ])
-        ], $options);
+            ]),
+            ...$options
+        ];
         if (!empty($this->proxy)) {
             $options['proxy'] = [
                 'http' => "tcp://{$this->proxy}",

@@ -63,7 +63,13 @@ class IP extends Model implements ArrayAble
         return [
             [['proxy'], function () {
                 $host = !empty($this->ip) && $this->ip !== '127.0.0.1' ? $this->ip : '';
+                if (empty($host)) {
+                    return '';
+                }
                 $port = !empty($this->port) ? ":{$this->port}" : '';
+                if (empty($port)) {
+                    return '';
+                }
                 $user = !empty($this->user) ? $this->user : '';
                 $pass = !empty($this->pass) ? ':' . $this->pass : '';
                 $pass = ($user && $pass) ? "$pass@" : '';

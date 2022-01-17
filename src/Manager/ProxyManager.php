@@ -107,6 +107,9 @@ final class ProxyManager
         $onlyUpdate = false;
         $updateArr = [];
         foreach ($items as $data) {
+            if ($data['ip'] === '127.0.0.1' || empty($data['port'])) {
+                continue;
+            }
             if (!isset($data['id'])) {
                 if ($data['duration'] > IP::IP_VCODE) {
                     $data['score'] = 100;

@@ -7,11 +7,9 @@ namespace Rabbit\Spider\Register;
 class RegisterManager
 {
     protected array $regists = [];
-    protected string $class;
 
-    public function __construct(string $class)
+    public function __construct(protected string $class)
     {
-        $this->class = $class;
     }
 
     public function get(string $name, string $msg = null): AbstractRegister

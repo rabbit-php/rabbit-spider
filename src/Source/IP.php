@@ -33,7 +33,6 @@ class IP extends Model implements ArrayAble
     public bool $isLocal = false;
     public bool $remove = false;
 
-    protected ?AbstractSource $ctrl = null;
     protected array $hosts = [];
 
     const IP_VCODE = 0;
@@ -41,10 +40,9 @@ class IP extends Model implements ArrayAble
 
     protected Client $client;
 
-    public function __construct(array $columns = [], AbstractSource $ctrl = null)
+    public function __construct(array $columns = [], protected ?AbstractSource $ctrl = null)
     {
         parent::__construct($columns);
-        $this->ctrl = $ctrl;
         $this->validate();
 
         $this->client = new Client([

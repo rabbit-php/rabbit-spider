@@ -6,7 +6,6 @@ namespace Rabbit\Spider\Register;
 
 abstract class AbstractRegister
 {
-    protected string $name;
     protected bool $status = false;
     protected int $interval = 60;
     protected array $servers = [];
@@ -14,9 +13,8 @@ abstract class AbstractRegister
     protected string $msg;
     protected int $tick = 10;
 
-    public function __construct(string $name)
+    public function __construct(protected string $name)
     {
-        $this->name = $name;
         $this->msg = current(swoole_get_local_ip()) . ':' . getmypid();
     }
 

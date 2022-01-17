@@ -15,8 +15,6 @@ use Throwable;
 
 final class ProxyManager
 {
-    protected IProxyStore $store;
-
     public array $attributes = ['ip2long', 'ip', 'port', 'anonymity', 'protocol', 'location', 'score', 'duration', 'source'];
 
     private array $checkCode = [];
@@ -33,9 +31,8 @@ final class ProxyManager
 
     protected array $ciphers = [];
 
-    public function __construct(IProxyStore $store, array $sources = null)
+    public function __construct(protected IProxyStore $store, array $sources = null)
     {
-        $this->store = $store;
         $this->sources = $sources ?? $this->sources;
         $this->ciphers = array_map(fn (string $val) => strtoupper($val), openssl_get_cipher_methods(true));
     }

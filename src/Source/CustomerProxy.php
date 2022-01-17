@@ -12,14 +12,11 @@ class CustomerProxy extends AbstractSource
 
     protected int $checktime = 120 * 1000;
 
-    protected ?IInnerProxy $service = null;
-
-    public function __construct(string $ips, IInnerProxy $service = null)
+    public function __construct(string $ips, protected ?IInnerProxy $service = null)
     {
         foreach (explode(',', $ips) as $ip) {
             $this->ips[] = $ip;
         }
-        $this->service = $service;
     }
 
     public function loadIP(): void

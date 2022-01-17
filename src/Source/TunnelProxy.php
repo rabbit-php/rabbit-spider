@@ -8,14 +8,11 @@ use Rabbit\Base\Helper\ArrayHelper;
 
 class TunnelProxy extends AbstractSource
 {
-    protected string $ip;
-
     protected bool $start = false;
 
-    public function __construct(string $ip)
+    public function __construct(protected string $ip)
     {
         $this->source = -2;
-        $this->ip = $ip;
     }
 
     public function loadIP(bool $auto = false): void

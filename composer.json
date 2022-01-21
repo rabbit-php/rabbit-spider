@@ -14,8 +14,7 @@
     "rabbit/base": "dev-master",
     "rabbit/data-pipeline": "dev-master",
     "rabbit/httpclient": "dev-master",
-    "symfony/dom-crawler": "^6",
-    "masterminds/html5": "^2.7"
+    "symfony/dom-crawler": "^6"
   },
   "require-dev": {
     "swoole/ide-helper": "@dev",

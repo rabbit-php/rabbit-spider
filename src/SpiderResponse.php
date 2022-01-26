@@ -52,7 +52,7 @@ class SpiderResponse
             if ($response->getBody()->getSize() === 0) {
                 $this->code = self::CODE_EMPTY;
             }
-            if (2 === ($this->code / 100) % 10) {
+            if (2 === (int)($this->code / 100) % 10) {
                 $this->isOK = true;
             }
         }

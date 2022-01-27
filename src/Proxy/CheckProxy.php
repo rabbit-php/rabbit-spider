@@ -51,7 +51,7 @@ class CheckProxy extends AbstractProxyPlugin
             return;
         }
 
-        wgeach($this->checkList, function (string $url, int $timeout) use ($msg) {
+        wgeach($this->checkList, function (string $url, int $timeout) use ($msg): void {
             if (isset($msg->opt['check']) && $msg->opt['check'] !== parse_url($url)) {
                 return;
             }
@@ -59,7 +59,7 @@ class CheckProxy extends AbstractProxyPlugin
             $tmp = clone $msg;
             $tmp->data = $data;
             $data = null;
-            wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout) {
+            wgeach($tmp->data, function (int $i, array &$item) use ($url, $timeout): void {
                 $proxy = "{$item['ip']}:{$item['port']}";
                 $response = new SpiderResponse();
                 try {

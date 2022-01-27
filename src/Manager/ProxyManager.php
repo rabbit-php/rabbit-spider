@@ -34,7 +34,7 @@ final class ProxyManager
     public function __construct(protected IProxyStore $store, array $sources = null)
     {
         $this->sources = $sources ?? $this->sources;
-        $this->ciphers = array_map(fn (string $val) => strtoupper($val), openssl_get_cipher_methods(true));
+        $this->ciphers = array_map(fn (string $val): string => strtoupper($val), openssl_get_cipher_methods(true));
     }
 
     public function verification(string $url, SpiderResponse $response): void
@@ -70,8 +70,10 @@ final class ProxyManager
             $this->running = true;
             foreach ($this->sources as $name => $source) {
                 $source->setManager($this);
-                loop(function () use ($source, $name) {
-                    sync("proxy.{$name}", fn () => $source->loadIP());
+                loop(function () use ($source, $name): void {
+                    sync("proxy.{$name}", function () use ($source): void {
+                        $source->loadIP();
+                    });
                 }, $source->getLoopTime() * 1000);
             }
         }
@@ -79,7 +81,9 @@ final class ProxyManager
             $this->queue[$host] = new SplChannel();
             $this->localQueue[$host] = new SplChannel();
             foreach ($this->sources as $name => $source) {
-                sync("proxy.{$name}", fn () => $source->loadIP());
+                sync("proxy.{$name}", function () use ($source): void {
+                    $source->loadIP();
+                });
                 $source->run();
             }
         }

@@ -109,7 +109,7 @@ class UserAgent
     private static function getAgentDetails(): array
     {
         if (!isset(self::$agentDetails)) {
-            sync('proxy.useragent', fn () => self::$agentDetails = json_decode(file_get_contents(__DIR__ . '/agent_list.json'), true));
+            sync('proxy.useragent', fn (): array => self::$agentDetails = json_decode(file_get_contents(__DIR__ . '/agent_list.json'), true));
         }
 
         return self::$agentDetails;

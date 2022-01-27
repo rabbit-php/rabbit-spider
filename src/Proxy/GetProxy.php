@@ -76,7 +76,7 @@ class GetProxy extends AbstractProxyPlugin
         }
         $useProxy = count($this->proxy);
         foreach ($this->domains as $domain => $timeout) {
-            rgo(function () use ($domain, $timeout, $msg, $useProxy) {
+            rgo(function () use ($domain, $timeout, $msg, $useProxy): void {
                 $model = $this->classPrefix . '\\' . $domain;
                 /** @var AbstractDomain $domain */
                 $domain = create($model);
@@ -105,7 +105,7 @@ class GetProxy extends AbstractProxyPlugin
                                             $ip = $this->proxy[array_rand($this->proxy)];
                                             if ($ip->proxy) {
                                                 $options['proxy'] = "tcp://{$ip->proxy}";
-                                                $options['pool_key'] = static function (Request $request) {
+                                                $options['pool_key'] = static function (Request $request): string {
                                                     return Client::getKey($request->getConnectionTarget() + $request->getProxy());
                                                 };
                                             }
@@ -122,7 +122,7 @@ class GetProxy extends AbstractProxyPlugin
                                         $total = $domain->getPages($crawler);
                                         if (null !== $selector = $domain->getSelector()) {
                                             $table = $crawler->filterXPath($selector);
-                                            $table->each(function (Crawler $node) use ($domain, $tmp) {
+                                            $table->each(function (Crawler $node) use ($domain, $tmp): void {
                                                 if (!empty($data = $domain->buildData($node))) {
                                                     $tmp->data[] = array_combine($this->manager->attributes, [...$data, 91, 1, 0]);
                                                 }

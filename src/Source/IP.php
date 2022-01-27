@@ -61,7 +61,7 @@ class IP extends Model implements ArrayAble
     public function rules(): array
     {
         return [
-            [['proxy'], function () {
+            [['proxy'], function (): string {
                 $host = !empty($this->ip) && $this->ip !== '127.0.0.1' ? $this->ip : '';
                 if (empty($host)) {
                     return '';
@@ -104,7 +104,7 @@ class IP extends Model implements ArrayAble
         $response = new SpiderResponse();
         $host = parse_url($url, PHP_URL_HOST);
         $options = [
-            'pool_key' => function (Request $request) use ($host) {
+            'pool_key' => function (Request $request) use ($host): string {
                 return $this->hosts[$host] = Client::getKey($request->getConnectionTarget() + $request->getProxy());
             },
             'useragent' => UserAgent::random([

@@ -46,7 +46,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
         );
         $this->busySize === 0 && $this->busySize = (int)ceil($this->maxSize * $this->percent / 100);
         $this->channel = new Channel($this->maxSize);
-        $this->regist = getDI('register')->get($this->taskName);
+        $this->regist = service('register')->get($this->taskName);
         $this->regist->regist();
         $this->workerName = $this->regist->getMsg();
     }

@@ -14,6 +14,6 @@ abstract class AbstractProxyPlugin extends AbstractPlugin
     public function init(): void
     {
         parent::init();
-        $this->manager = getDI('proxy.manager');
+        $this->manager = service('proxy.manager');
     }
 }

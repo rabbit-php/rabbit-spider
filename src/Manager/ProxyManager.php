@@ -119,6 +119,7 @@ final class ProxyManager
                     $data['score'] = 100;
                     $updateArr[] = $data;
                 }
+                $data['port'] = (int)$data['port'] === 0 ? 80 : $data['port'];
             } else {
                 $onlyUpdate = true;
                 if ($data['duration'] <= IP::IP_VCODE) {

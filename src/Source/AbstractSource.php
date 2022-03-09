@@ -56,13 +56,16 @@ abstract class AbstractSource
             $this->manager->getLocalQueue()[$host]?->enqueue($ip);
             return false;
         }
+        if ($ip->remove) {
+            return true;
+        }
         if ($ip->source >= 0 && $ip->duration <= IP::IP_VCODE) {
             $ip->remove = true;
             $this->delIPs[] = $ip->toArray();
             unset($this->idle["{$ip->ip}:{$ip->port}"]);
             return true;
         }
-        $ip->release && !$ip->remove && $this->manager->getQueue()[$host]?->enqueue($ip);
+        $ip->release && $this->manager->getQueue()[$host]?->enqueue($ip);
         return false;
     }
 

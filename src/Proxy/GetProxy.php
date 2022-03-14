@@ -119,7 +119,6 @@ class GetProxy extends AbstractProxyPlugin
                                         libxml_clear_errors();
                                         $tmp = clone $msg;
                                         $tmp->data = [];
-                                        $total = $domain->getPages($crawler);
                                         if (null !== $selector = $domain->getSelector()) {
                                             $table = $crawler->filterXPath($selector);
                                             $table->each(function (Crawler $node) use ($domain, $tmp): void {
@@ -134,6 +133,7 @@ class GetProxy extends AbstractProxyPlugin
                                                 }
                                             }
                                         }
+                                        $total = $domain->getPages($crawler);
                                         $tmp->data = array_filter($tmp->data);
                                         if (empty($tmp->data)) {
                                             if (++$count >= $this->maxEmpty) {
@@ -141,17 +141,14 @@ class GetProxy extends AbstractProxyPlugin
                                                 break 3;
                                             }
                                         }
+                                        $count = 0;
+                                        $this->sink($tmp);
                                         if (++$index >= $total) {
                                             break 3;
                                         }
-                                        $count = 0;
-                                        $this->sink($tmp);
                                         continue 2;
                                     } catch (Throwable $exception) {
                                     } finally {
-                                        $response = null;
-                                        $crawler = null;
-                                        $tmp = null;
                                         sleep($realSleep);
                                     }
                                 }

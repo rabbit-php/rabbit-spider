@@ -30,6 +30,8 @@ class GetProxy extends AbstractProxyPlugin
     protected array $proxy = [];
 
     protected int $maxEmpty = 10;
+
+    protected array $useProxy = [];
     /**
      * @throws Throwable
      */
@@ -39,8 +41,12 @@ class GetProxy extends AbstractProxyPlugin
         [
             $this->domains,
             $this->classPrefix,
-            $this->maxEmpty, $proxy
-        ] = ArrayHelper::getValueByArray($this->config, ['domains', 'classPrefix', 'maxEmpty', 'proxy'], ['maxEmpty' => $this->maxEmpty]);
+            $this->maxEmpty, $proxy, $this->useProxy
+        ] = ArrayHelper::getValueByArray(
+            $this->config,
+            ['domains', 'classPrefix', 'maxEmpty', 'proxy', 'useProxy'],
+            ['maxEmpty' => $this->maxEmpty, 'useProxy' => $this->useProxy]
+        );
         if ($this->domains === null || $this->classPrefix === null) {
             throw new InvalidArgumentException("domains or classPrefix is empty!");
         }
@@ -75,9 +81,9 @@ class GetProxy extends AbstractProxyPlugin
             }
         }
         $useProxy = count($this->proxy);
-        foreach ($this->domains as $domain => $timeout) {
-            rgo(function () use ($domain, $timeout, $msg, $useProxy): void {
-                $model = $this->classPrefix . '\\' . $domain;
+        foreach ($this->domains as $site => $timeout) {
+            rgo(function () use ($site, $timeout, $msg, $useProxy): void {
+                $model = $this->classPrefix . '\\' . $site;
                 /** @var AbstractDomain $domain */
                 $domain = create($model);
                 $model = substr($model, strrpos($model, '\\') + 1);
@@ -101,7 +107,7 @@ class GetProxy extends AbstractProxyPlugin
                                                 'DNT' => "1"
                                             ]
                                         ];
-                                        if ($useProxy > 0) {
+                                        if ($useProxy > 0 && in_array($site, $this->useProxy)) {
                                             $ip = $this->proxy[array_rand($this->proxy)];
                                             if ($ip->proxy) {
                                                 $options['proxy'] = "tcp://{$ip->proxy}";

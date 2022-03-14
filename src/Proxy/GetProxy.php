@@ -147,7 +147,6 @@ class GetProxy extends AbstractProxyPlugin
                                                 break 3;
                                             }
                                         }
-                                        $count = 0;
                                         $this->sink($tmp);
                                         if (++$index >= $total) {
                                             break 3;

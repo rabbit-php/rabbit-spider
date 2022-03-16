@@ -102,7 +102,6 @@ class GetProxy extends AbstractProxyPlugin
                                             'use_pool' => true,
                                             'iconv' => false,
                                             'timeout' => $timeout * 5,
-                                            'iconv' => $domain->getEncoding() ?? false,
                                             'headers' => [
                                                 'DNT' => "1"
                                             ]

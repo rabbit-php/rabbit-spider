@@ -7,7 +7,6 @@ namespace Rabbit\Spider;
 use Rabbit\Base\Core\Channel;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Spider\Register\AbstractRegister;
-use Swoole\Coroutine;
 
 abstract class IPPoolPlugin extends AbstractProxyPlugin
 {
@@ -54,8 +53,8 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
     public function check(): bool
     {
         if (count($this->runItems) >= $this->maxSize) {
-            $this->cid = Coroutine::getCid();
-            Coroutine::yield();
+            $this->cid = getCid();
+            ryield();
         }
         return true;
     }
@@ -65,7 +64,7 @@ abstract class IPPoolPlugin extends AbstractProxyPlugin
         if (count($this->runItems) < $this->busySize && $this->cid > 0) {
             $cid = $this->cid;
             $this->cid = 0;
-            Coroutine::resume($cid);
+            resume($cid);
         }
     }
 }

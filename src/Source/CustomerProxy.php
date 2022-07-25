@@ -44,7 +44,7 @@ class CustomerProxy extends AbstractSource
         $res['num'] = isset($parsed_url['path']) ? (int)str_replace('/', '', $parsed_url['path']) : 3;
         parse_str($parsed_url['query'] ?? '', $query);
         $res['checktime'] = ArrayHelper::getValue($query, 'checktime', $this->checktime);
-        $res['ip2long'] = ip2long($res['ip']);
+        $res['ip2long'] = (int)ip2long($res['ip']);
         $res['source'] = $this->source;
         $res['release'] = $this->release;
         $res['timeout'] = $this->timeout;
